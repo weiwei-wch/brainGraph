@@ -194,7 +194,7 @@ graph_attr_perm_diffs <- function(densities, meas.list, auc) {
     tmp <- data.table(t(sapply(meas.list, function(y) auc_diff(densities, y))))
   } else {
     meas.dt <- lapply(meas.list, function(y) diffFun_graph_noAUC(densities, y))
-    for (i in 1:7) setnames(meas.dt[[i]], 'y', names(meas.dt)[i])
+    for (i in 1:length(meas.dt)) setnames(meas.dt[[i]], 'y', names(meas.dt)[i])
     tmp <- Reduce(merge, meas.dt)
   }
   return(tmp)
