@@ -174,6 +174,20 @@ graph_attr_perm <- function(g, densities, atlas) {
   list(mod=mod, Cp=Cp, Lp=Lp, assort=assort, E.global=E.global, assort.lobe=assort.lobe, asymm=asymm)
 }
                   
+graph_attr_perm_weighted <- function(g, densities, atlas) {
+  g <- lapply(g, lapply, make_brainGraph, atlas, rand=TRUE)
+
+  mod <- sapply(g, sapply, function(x) modularity(cluster_louvain(x)))
+  Cp <- sapply(g, sapply, function(x) transitivity(x, type='localaverage'))
+  Lp <- sapply(g, sapply, mean_distance)
+  assort <- sapply(g, sapply, assortativity_degree)
+  E.global <- sapply(g, sapply, efficiency, 'global')
+  assort.lobe <- sapply(g, sapply, function(x)
+                        assortativity_nominal(x, as.integer(factor(V(x)$lobe))))
+  asymm <- sapply(g, sapply, function(x) edge_asymmetry(x)$asymm)
+  list(mod=mod, Cp=Cp, Lp=Lp, assort=assort, E.global=E.global, assort.lobe=assort.lobe, asymm=asymm)
+}
+                  
 graph_attr_perm_diffs <- function(densities, meas.list, auc) {
   if (isTRUE(auc)) {
     tmp <- data.table(t(sapply(meas.list, function(y) auc_diff(densities, y))))
@@ -196,7 +210,7 @@ permute_graph_foreach_weighted <- function(perms, densities, resids, groups, atl
   i <- NULL
   res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
     g <- make_graphs_perm_weighted(densities, resids, perms[i, ], groups)
-    meas.list <- graph_attr_perm(g, densities, atlas)
+    meas.list <- graph_attr_perm_weighted(g, densities, atlas)
     graph_attr_perm_diffs(densities, meas.list, auc)
   }
 }
