@@ -139,7 +139,7 @@ brainGraph_permute <- function(densities, resids, N=5e3, perms=NULL, auc=FALSE,
 #==============================================================================
 make_graphs_perm <- function(densities, resids, inds, groups) {
   corrs <- lapply(unique(groups), function(x)
-                  corr.matrix(resids[which(groups[inds] == x)],
+                  corr.matrix.abs(resids[which(groups[inds] == x)],
                               densities=densities, rand=TRUE))
   sapply(corrs, lapply, function(x)
          apply(x$r.thresh, 3, graph_from_adjacency_matrix, mode='undirected', diag=F))
@@ -147,11 +147,11 @@ make_graphs_perm <- function(densities, resids, inds, groups) {
 
 make_graphs_perm_weighted <- function(densities, resids, inds, groups) {
   corrs <- lapply(unique(groups), function(x)
-    corr.matrix.weighted(resids[which(groups[inds] == x)],
-                densities=densities, rand=TRUE))
+                  corr.matrix.abs(resids[which(groups[inds] == x)],
+                              densities=densities, rand=TRUE))
   sapply(corrs, lapply, function(x)
     apply(x$r.thresh, 3, function(y)
-          graph_from_adjacency_matrix(x$R*(x$R>0)*y, mode='undirected', diag=F, weighted=T)))
+          graph_from_adjacency_matrix(x$R*y, mode='undirected', diag=F, weighted=T)))
 }
          
 # Graph level
@@ -185,8 +185,8 @@ graph_attr_perm_weighted <- function(g, densities, atlas) {
   E.global <- sapply(g, sapply, efficiency, 'global')
   assort.lobe <- sapply(g, sapply, function(x)
                         assortativity_nominal(x, as.integer(factor(V(x)$lobe))))
-  asymm <- sapply(g, sapply, function(x) edge_asymmetry(x)$asymm)
-  list(mod=mod, Cp=Cp, Lp=Lp, assort=assort, E.global=E.global, assort.lobe=assort.lobe, asymm=asymm)
+  #asymm <- sapply(g, sapply, function(x) edge_asymmetry(x)$asymm)
+  list(mod=mod, Cp=Cp, Lp=Lp, assort=assort, E.global=E.global, assort.lobe=assort.lobe)
 }
                   
 graph_attr_perm_diffs <- function(densities, meas.list, auc) {
