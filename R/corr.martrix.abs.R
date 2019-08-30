@@ -1,5 +1,5 @@
 #corr.matrix.my
-corr.matrix.weighted<-function (resids, densities, thresholds = NULL, what = c("resids", 
+corr.matrix.abs<-function (resids, densities, thresholds = NULL, what = c("resids", 
                                                                          "raw"), exclude.reg = NULL, type = c("pearson", 
                                                                                                               "spearman"), rand = FALSE) 
 {
