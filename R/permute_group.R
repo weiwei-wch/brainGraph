@@ -65,7 +65,7 @@ brainGraph_permute <- function(densities, resids, N=5e3, perms=NULL, auc=FALSE,
                                level=c('graph', 'vertex', 'other'),
                                measure=c('btwn.cent', 'degree', 'E.nodal', 'ev.cent',
                                          'knn', 'transitivity', 'vulnerability'),
-                               atlas=NULL, .function=NULL) {
+                               atlas=NULL, .function=NULL, weighted=FALSE) {
   Group <- NULL
   stopifnot(inherits(resids, 'brainGraph_resids'))
   measure <- match.arg(measure)
@@ -95,10 +95,16 @@ brainGraph_permute <- function(densities, resids, N=5e3, perms=NULL, auc=FALSE,
   groups <- as.numeric(resids$resids.all$Group)
 
   # Loop through the permutation matrix
+  if (isTRUE(weighted)) {
   res.perm <- switch(level,
+               vertex=permute_vertex_foreach_weighted(perms, densities, resids, groups, measure, diffFun),
+               other=permute_other_foreach_weighted(perms, densities, resids, groups, .function),
+               graph=permute_graph_foreach_weighted(perms, densities, resids, groups, atlas, auc))
+    } else {
                vertex=permute_vertex_foreach(perms, densities, resids, groups, measure, diffFun),
                other=permute_other_foreach(perms, densities, resids, groups, .function),
                graph=permute_graph_foreach(perms, densities, resids, groups, atlas, auc))
+  }
 
   if (length(densities) == 1) res.perm <- cbind(densities=densities, res.perm)
 
@@ -138,12 +144,22 @@ make_graphs_perm <- function(densities, resids, inds, groups) {
          apply(x$r.thresh, 3, graph_from_adjacency_matrix, mode='undirected', diag=F))
 }
 
+make_graphs_perm_weighted <- function(densities, resids, inds, groups) {
+  corrs <- lapply(unique(groups), function(x)
+    corr.matrix.weighted(resids[which(groups[inds] == x)],
+                densities=densities, rand=TRUE))
+  sapply(corrs, lapply, function(x)
+    apply(x$r.thresh, 3, function(y)
+          graph_from_adjacency_matrix(x$R*(x$R>0)*y, mode='undirected', diag=F, weighted=T)))
+}
+         
 # Graph level
 diffFun_graph_noAUC <- function(densities, meas.list) {
   tmp <- data.table(densities=densities, meas=meas.list[, 1] - meas.list[, 2], key='densities')
   setnames(tmp, 'meas', deparse(substitute(meas.list)))
   return(tmp)
 }
+          
 graph_attr_perm <- function(g, densities, atlas) {
   g <- lapply(g, lapply, make_brainGraph, atlas, rand=TRUE)
 
@@ -157,6 +173,21 @@ graph_attr_perm <- function(g, densities, atlas) {
   asymm <- sapply(g, sapply, function(x) edge_asymmetry(x)$asymm)
   list(mod=mod, Cp=Cp, Lp=Lp, assort=assort, E.global=E.global, assort.lobe=assort.lobe, asymm=asymm)
 }
+                  
+graph_attr_perm_weighted <- function(g, densities, atlas) {
+  g <- lapply(g, lapply, make_brainGraph, atlas, rand=TRUE)
+
+  mod <- sapply(g, sapply, function(x) modularity(cluster_louvain(x)))
+  Cp <- sapply(g, sapply, function(x) transitivity(x, type='localaverage'))
+  Lp <- sapply(g, sapply, mean_distance)
+  assort <- sapply(g, sapply, assortativity_degree)
+  E.global <- sapply(g, sapply, efficiency, 'global')
+  assort.lobe <- sapply(g, sapply, function(x)
+                        assortativity_nominal(x, as.integer(factor(V(x)$lobe))))
+  asymm <- sapply(g, sapply, function(x) edge_asymmetry(x)$asymm)
+  list(mod=mod, Cp=Cp, Lp=Lp, assort=assort, E.global=E.global, assort.lobe=assort.lobe, asymm=asymm)
+}
+                  
 graph_attr_perm_diffs <- function(densities, meas.list, auc) {
   if (isTRUE(auc)) {
     tmp <- data.table(t(sapply(meas.list, function(y) auc_diff(densities, y))))
@@ -175,7 +206,14 @@ permute_graph_foreach <- function(perms, densities, resids, groups, atlas, auc) 
     graph_attr_perm_diffs(densities, meas.list, auc)
   }
 }
-
+permute_graph_foreach_weighted <- function(perms, densities, resids, groups, atlas, auc) {
+  i <- NULL
+  res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
+    g <- make_graphs_perm_weighted(densities, resids, perms[i, ], groups)
+    meas.list <- graph_attr_perm_weighted(g, densities, atlas)
+    graph_attr_perm_diffs(densities, meas.list, auc)
+  }
+}
 # Vertex-level
 vertex_attr_perm <- function(measure, g, densities) {
   switch(measure,
