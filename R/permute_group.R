@@ -187,7 +187,7 @@ graph_attr_perm <- function(g, densities, atlas) {
       assort.lobe.hemi=assort.lobe.hemi, spatial.dist=spatial.dist)
 }
                   
-graph_attr_perm_weighted <- function(g, densities, atlas) {
+graph_attr_perm_weighted <- function(g, densities, atlas, xfm.type = c('1/w', '-log(w)', '1-w')) {
   g <- lapply(g, lapply, make_brainGraph, atlas, rand=TRUE)
   
   xfm.type <- match.arg(xfm.type)
@@ -227,11 +227,11 @@ permute_graph_foreach <- function(perms, densities, resids, groups, atlas, auc) 
     graph_attr_perm_diffs(densities, meas.list, auc)
   }
 }
-permute_graph_foreach_weighted <- function(perms, densities, resids, groups, atlas, auc) {
+permute_graph_foreach_weighted <- function(perms, densities, resids, groups, atlas, auc, xfm.type) {
   i <- NULL
   res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
     g <- make_graphs_perm_weighted(densities, resids, perms[i, ], groups)
-    meas.list <- graph_attr_perm_weighted(g, densities, atlas)
+    meas.list <- graph_attr_perm_weighted(g, densities, atlas, xfm.type)
     graph_attr_perm_diffs(densities, meas.list, auc)
   }
 }
