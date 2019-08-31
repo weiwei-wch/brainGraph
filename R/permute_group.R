@@ -227,7 +227,7 @@ permute_graph_foreach <- function(perms, densities, resids, groups, atlas, auc) 
     graph_attr_perm_diffs(densities, meas.list, auc)
   }
 }
-permute_graph_foreach_weighted <- function(perms, densities, resids, groups, atlas, auc, xfm.type) {
+permute_graph_foreach_weighted <- function(perms, densities, resids, groups, atlas, auc, xfm.type=c('1/w', '-log(w)', '1-w')) {
   i <- NULL
   res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
     g <- make_graphs_perm_weighted(densities, resids, perms[i, ], groups)
