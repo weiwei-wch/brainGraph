@@ -181,7 +181,7 @@ graph_attr_perm <- function(g, densities, atlas) {
   spatial.dist <- sapply(g, sapply, function(x) mean(x, edge_spatial_dist(x)))
                      
   list(mod=mod, Cp=Cp, Lp=Lp, assort=assort, E.global=E.global, assort.lobe=assort.lobe, asymm=asymm,
-      diameter=diameter, transivity=transivity, E.local=E.local, vulnerability=vulnerability,
+      diameter=diameter, transitivity=transitivity, E.local=E.local, vulnerability=vulnerability,
       assort.lobe.hemi=assort.lobe.hemi, spatial.dist=spatial.dist)
 }
                   
