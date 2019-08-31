@@ -195,11 +195,8 @@ graph_attr_perm_weighted <- function(g, densities, atlas,
   xfm.type <- match.arg(xfm.type)
   clust.method <- clust.method
   
-  comm.wt <- sapply(g, sapply, function(x) eval(parse(text=paste0('cluster_', clust.method, '(x)'))))
-  modularity <- comm.wt$modularity
-  mod.wt <- sapply(modularity, sapply, function(x) max(x))
+  mod.wt <- sapply(g, sapply, function(x) max((eval(parse(text=paste0('cluster_', clust.method, '(x)')))$modularity)))
   strength <- sapply(g, sapply, function(x) mean(graph.strength(x)))
-  rich.wt <- sapply(g, sapply, function(x) rich_club_all(x, weighted=TRUE))
   
   g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
   Lpv.wt <- sapply(g1, sapply, function(x) distances(x))
@@ -209,7 +206,7 @@ graph_attr_perm_weighted <- function(g, densities, atlas,
   E.local.wt <- sapply(g1, sapply, function(x)
                         mean(efficiency(x, type='local', use.parallel=TRUE, A=NULL)))
                        
-  list(mod.wt=mod.wt, strength=strength, rich.wt=rich.wt, Lp.wt=Lp.wt, diameter.wt=diameter.wt, E.global.wt=E.global.wt, 
+  list(mod.wt=mod.wt, strength=strength, Lp.wt=Lp.wt, diameter.wt=diameter.wt, E.global.wt=E.global.wt, 
        E.local.wt=E.local.wt)
 }
                   
@@ -412,7 +409,6 @@ summary.brainGraph_permute <- function(object, measure=NULL,
                       spatial.dist='Spatial distance',
                       mod.wt="Weighted modularity",
                       Lp.wt="Weighted characteristic path length",
-                      rich.wt="Weighted rich-club coeffcient",
                       E.local.wt="Weighted local efficiency",
                       diameter.wt="Weighted diameter")
 
