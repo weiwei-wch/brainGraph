@@ -404,11 +404,11 @@ summary.brainGraph_permute <- function(object, measure=NULL,
                       transitivity='Local transitivity',
                       E.local='Local efficiency',
                       assort.lobe.hemi='Hemisphere lobe assortativity',
-                      spatial.dist='Spatial distance'
-                      mod.wt="Weighted modularity"
-                      Lp.wt="Weighted characteristic path length"
-                      rich.wt="Weighted rich-club coeffcient"
-                      E.local.wt="Weighted local efficiency"
+                      spatial.dist='Spatial distance',
+                      mod.wt="Weighted modularity",
+                      Lp.wt="Weighted characteristic path length",
+                      rich.wt="Weighted rich-club coeffcient",
+                      E.local.wt="Weighted local efficiency",
                       diameter.wt="Weighted diameter")
 
   p.sig <- match.arg(p.sig)
