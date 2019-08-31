@@ -101,7 +101,8 @@ brainGraph_permute <- function(densities, resids, N=5e3, perms=NULL, auc=FALSE,
   res.perm <- switch(level,
                vertex=permute_vertex_foreach_weighted(perms, densities, resids, groups, measure, diffFun),
                other=permute_other_foreach_weighted(perms, densities, resids, groups, .function),
-               graph=permute_graph_foreach_weighted(perms, densities, resids, groups, atlas, auc))
+               graph=permute_graph_foreach_weighted(perms, densities, resids, groups, atlas, auc,
+                                                    xfm.type = '1/w', clust.method=clust.method)
     } else {
   res.perm <- switch(level,
                vertex=permute_vertex_foreach(perms, densities, resids, groups, measure, diffFun),
@@ -187,7 +188,8 @@ graph_attr_perm <- function(g, densities, atlas) {
       assort.lobe.hemi=assort.lobe.hemi, spatial.dist=spatial.dist)
 }
                   
-graph_attr_perm_weighted <- function(g, densities, atlas, xfm.type = c('1/w', '-log(w)', '1-w')) {
+graph_attr_perm_weighted <- function(g, densities, atlas, 
+                                     xfm.type = c('1/w', '-log(w)', '1-w'), clust.method='louvain') {
   g <- lapply(g, lapply, make_brainGraph, atlas, rand=TRUE)
   
   xfm.type <- match.arg(xfm.type)
@@ -227,7 +229,8 @@ permute_graph_foreach <- function(perms, densities, resids, groups, atlas, auc) 
     graph_attr_perm_diffs(densities, meas.list, auc)
   }
 }
-permute_graph_foreach_weighted <- function(perms, densities, resids, groups, atlas, auc, xfm.type=c('1/w', '-log(w)', '1-w')) {
+permute_graph_foreach_weighted <- function(perms, densities, resids, groups, atlas, auc, 
+                                           xfm.type=c('1/w', '-log(w)', '1-w'), clust.method='louvain') {
   i <- NULL
   res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
     g <- make_graphs_perm_weighted(densities, resids, perms[i, ], groups)
