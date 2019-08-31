@@ -102,7 +102,7 @@ brainGraph_permute <- function(densities, resids, N=5e3, perms=NULL, auc=FALSE,
                vertex=permute_vertex_foreach_weighted(perms, densities, resids, groups, measure, diffFun),
                other=permute_other_foreach_weighted(perms, densities, resids, groups, .function),
                graph=permute_graph_foreach_weighted(perms, densities, resids, groups, atlas, auc,
-                                                    xfm.type = '1/w', clust.method=clust.method)
+                                                    xfm.type = xfm.type, clust.method=clust.method))
     } else {
   res.perm <- switch(level,
                vertex=permute_vertex_foreach(perms, densities, resids, groups, measure, diffFun),
