@@ -196,7 +196,8 @@ graph_attr_perm_weighted <- function(g, densities, atlas,
   clust.method <- clust.method
   
   comm.wt <- sapply(g, sapply, function(x) eval(parse(text=paste0('cluster_', clust.method, '(x)'))))
-  mod.wt <- sapply(comm.wt, sapply, function(x) max(x$modularity))
+  modularity <- comm.wt$modularity
+  mod.wt <- sapply(modularity, sapply, function(x) max(x))
   strength <- sapply(g, sapply, function(x) mean(graph.strength(x)))
   rich.wt <- sapply(g, sapply, function(x) rich_club_all(x, weighted=TRUE))
   
