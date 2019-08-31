@@ -172,7 +172,16 @@ graph_attr_perm <- function(g, densities, atlas) {
   assort.lobe <- sapply(g, sapply, function(x)
                         assortativity_nominal(x, as.integer(factor(V(x)$lobe))))
   asymm <- sapply(g, sapply, function(x) edge_asymmetry(x)$asymm)
-  list(mod=mod, Cp=Cp, Lp=Lp, assort=assort, E.global=E.global, assort.lobe=assort.lobe, asymm=asymm)
+  diameter <- sapply(g, sapply, function(x) diameter(x, weights=NA))
+  transitivity <- sapply(g, sapply, function(x) transitivity(x))
+  E.local <- sapply(g, sapply, function(x) mean(efficiency(x, type='nodal', weights=NA)))
+  vulnerability <- sapply(g, sapply, function(x) max(vulnerability(x, use.parallel=use.parallel)))
+  assort.lobe.hemi <- sapply(g, sapply, function(x) assortativity_nominal(x, V(x)$lobe.hemi))
+  spatial.dist <- sapply(g, sapply, function(x) mean(x, edge_spatial_dist(x)))
+                     
+  list(mod=mod, Cp=Cp, Lp=Lp, assort=assort, E.global=E.global, assort.lobe=assort.lobe, asymm=asymm,
+      diameter=diameter, transivity=transivity, E.local=E.local, vulnerability=vulnerability,
+      assort.lobe.hemi=assort.lobe.hemi, spatial.dist=spatial.dist)
 }
                   
 graph_attr_perm_weighted <- function(g, densities, atlas) {
@@ -185,8 +194,9 @@ graph_attr_perm_weighted <- function(g, densities, atlas) {
   E.global <- sapply(g, sapply, efficiency, 'global')
   assort.lobe <- sapply(g, sapply, function(x)
                         assortativity_nominal(x, as.integer(factor(V(x)$lobe))))
-  #asymm <- sapply(g, sapply, function(x) edge_asymmetry(x)$asymm)
-  list(mod=mod, Cp=Cp, Lp=Lp, assort=assort, E.global=E.global, assort.lobe=assort.lobe)
+  asymm <- sapply(g, sapply, function(x) edge_asymmetry(x)$asymm)
+                  
+  list(mod=mod, Cp=Cp, Lp=Lp, assort=assort, E.global=E.global, assort.lobe=assort.lobe, asymm=asymm)
 }
                   
 graph_attr_perm_diffs <- function(densities, meas.list, auc) {
@@ -381,7 +391,10 @@ summary.brainGraph_permute <- function(object, measure=NULL,
                       E.nodal='Nodal efficiency',
                       ev.cent='Eigenvector centrality',
                       knn='K-nearest neighbor degree',
-                      transitivity='Local transitivity')
+                      transitivity='Local transitivity',
+                      E.local='Local efficiency',
+                      assort.lobe.hemi='Hemisphere lobe assortativity',
+                      spatial.dist='Spatial distance')
 
   p.sig <- match.arg(p.sig)
   perm.sum <- with(object, list(auc=auc, N=N, level=level, densities=densities,
