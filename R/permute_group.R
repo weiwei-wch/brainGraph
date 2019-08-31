@@ -98,12 +98,14 @@ brainGraph_permute <- function(densities, resids, N=5e3, perms=NULL, auc=FALSE,
 
   # Loop through the permutation matrix
   if (isTRUE(weighted)) {
+  graphtype = 'weighted'
   res.perm <- switch(level,
                vertex=permute_vertex_foreach_weighted(perms, densities, resids, groups, measure, diffFun),
                other=permute_other_foreach_weighted(perms, densities, resids, groups, .function),
                graph=permute_graph_foreach_weighted(perms, densities, resids, groups, atlas, auc,
                                                     xfm.type = xfm.type, clust.method=clust.method))
     } else {
+  graphtype = 'binary'
   res.perm <- switch(level,
                vertex=permute_vertex_foreach(perms, densities, resids, groups, measure, diffFun),
                other=permute_other_foreach(perms, densities, resids, groups, .function),
@@ -131,8 +133,8 @@ brainGraph_permute <- function(densities, resids, N=5e3, perms=NULL, auc=FALSE,
     obs.diff <- res.perm[.N]
     res.perm <- res.perm[-.N]
   }
-  out <- list(atlas=atlas, auc=auc, N=N, level=level, measure=measure, densities=densities,
-              resids=resids, DT=res.perm, obs.diff=obs.diff, groups=resids$groups)
+  out <- list(atlas=atlas, auc=auc, N=N, level=level, measure=measure, graphtype=graphtype, 
+              densities=densities, resids=resids, DT=res.perm, obs.diff=obs.diff, groups=resids$groups)
   class(out) <- c('brainGraph_permute', class(out))
   return(out)
 }
@@ -287,8 +289,13 @@ summary.brainGraph_permute <- function(object, measure=NULL,
   perm.diff <- p <- N <- p.fdr <- region <- obs.diff <- NULL
 
   permDT <- copy(object$DT)
-  g <- with(object, make_graphs_perm(densities, resids, 1:nrow(resids$resids.all),
+  if (object$graphtype == 'weighted'){
+  g <- with(object, make_graphs_perm_weighted(densities, resids, 1:nrow(resids$resids.all),
                                      resids$resids.all[, as.numeric(Group)]))
+  }else{
+  g <- with(object, make_graphs_perm(densities, resids, 1:nrow(resids$resids.all),
+                                     resids$resids.all[, as.numeric(Group)]))}
+    
   # OTHER
   #-------------------------------------
   if (object$level == 'other') {  # Hack to figure out which level it is when level="other"
@@ -337,7 +344,10 @@ summary.brainGraph_permute <- function(object, measure=NULL,
     if (measure %in% c('asymm', 'assortativity.lobe')) {
       g <- lapply(g, lapply, make_brainGraph, object$atlas, rand=TRUE)
     }
-    meas.list <- with(object, graph_attr_perm(g, densities, atlas))
+    if (object$graphtype == 'weighted'){
+      meas.list <- with(object, graph_attr_perm_weighted(g, densities, atlas))
+    }else{
+      meas.list <- with(object, graph_attr_perm(g, densities, atlas))}
 
     obs <- meas.list[[measure]]
     if (isTRUE(object$auc)) {
