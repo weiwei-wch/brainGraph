@@ -201,13 +201,13 @@ graph_attr_perm_weighted <- function(g, densities, atlas,
   strength <- sapply(g, sapply, function(x) mean(graph.strength(x)))
   rich.wt <- sapply(g, sapply, function(x) rich_club_all(x, weighted=TRUE))
   
-  g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
-  Lpv.wt <- sapply(g1, sapply, distances)
+  
+  Lpv.wt <- sapply(g, sapply, function(x) distances(xfm.weights(x, xfm.type)))
   Lp.wt <- sapply(Lpv.wt, sapply, function(x) mean(x[upper.tri(distances(x))], na.rm=T))
-  diameter.wt <- sapply(g1, sapply, diameter)
-  E.global.wt <- sapply(g1, sapply, function(x) mean(efficiency(x, 'nodal')))
-  E.local.wt <- sapply(g1, sapply, function(x)
-                        mean(efficiency(x, type='local', use.parallel=TRUE, A=A)))
+  diameter.wt <- sapply(g, sapply, diameter(xfm.weights(x, xfm.type)))
+  E.global.wt <- sapply(g, sapply, function(x) mean(efficiency(xfm.weights(x, xfm.type), 'nodal')))
+  E.local.wt <- sapply(g, sapply, function(x)
+                        mean(efficiency(xfm.weights(x, xfm.type), type='local', use.parallel=TRUE, A=A)))
                        
   list(mod.wt=mod.wt, strength=strength, rich.wt=rich.wt, Lp.wt=Lp.wt, diameter.wt=diameter.wt, E.global.wt=E.global.wt, 
        E.local.wt=E.local.wt)
