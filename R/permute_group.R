@@ -65,7 +65,9 @@ brainGraph_permute <- function(densities, resids, N=5e3, perms=NULL, auc=FALSE,
                                level=c('graph', 'vertex', 'other'),
                                measure=c('btwn.cent', 'degree', 'E.nodal', 'ev.cent',
                                          'knn', 'transitivity', 'vulnerability'),
-                               atlas=NULL, .function=NULL, weighted=FALSE) {
+                               atlas=NULL, .function=NULL, weighted=FALSE,
+                               xfm.type=c('1/w', '-log(w)', '1-w'),
+                               clust.method='louvain') {
   Group <- NULL
   stopifnot(inherits(resids, 'brainGraph_resids'))
   measure <- match.arg(measure)
@@ -187,17 +189,24 @@ graph_attr_perm <- function(g, densities, atlas) {
                   
 graph_attr_perm_weighted <- function(g, densities, atlas) {
   g <- lapply(g, lapply, make_brainGraph, atlas, rand=TRUE)
-
-  mod <- sapply(g, sapply, function(x) modularity(cluster_louvain(x)))
-  Cp <- sapply(g, sapply, function(x) transitivity(x, type='localaverage'))
-  Lp <- sapply(g, sapply, mean_distance)
-  assort <- sapply(g, sapply, assortativity_degree)
-  E.global <- sapply(g, sapply, efficiency, 'global')
-  assort.lobe <- sapply(g, sapply, function(x)
-                        assortativity_nominal(x, as.integer(factor(V(x)$lobe))))
-  asymm <- sapply(g, sapply, function(x) edge_asymmetry(x)$asymm)
-                  
-  list(mod=mod, Cp=Cp, Lp=Lp, assort=assort, E.global=E.global, assort.lobe=assort.lobe, asymm=asymm)
+  
+  xfm.type <- match.arg(xfm.type)
+  clust.method <- clust.method
+  
+  comm.wt <- sapply(g, sapply, function(x) eval(parse(text=paste0('cluster_', clust.method, '(x)'))))
+  mod.wt <- sapply(comm.wt, sapply, max(x$modularity))
+  strength <- sapply(g, sapply, function(x) mean(graph.strength(x)))
+  rich.wt <- sapply(g, sapply, function(x) rich_club_all(x, weighted=TRUE))
+  
+  g1 <- sapply(g, sapply, function(x) xfm.weights(x, xfm.type))
+  Lp.wt <- sapply(g1, sapply, function(x) mean(Lpv.wt[upper.tri(distances(x))], na.rm=T))
+  diameter.wt <- sapply(g1, sapply, diameter)
+  E.global.wt <- sapply(g1, sapply, function(x) mean(efficiency(x, 'nodal')))
+  E.local.wt <- sapply(g1, sapply, function(x)
+                        mean(efficiency(x, type='local', use.parallel=TRUE, A=A)))
+                       
+  list(mod.wt=mod.wt, strength=strength, rich.wt=rich.wt, Lp.wt=Lp.wt, diameter.wt=diameter.wt, E.global.wt=E.global.wt, 
+       E.local.wt=E.local.wt)
 }
                   
 graph_attr_perm_diffs <- function(densities, meas.list, auc) {
@@ -380,7 +389,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
   meas.full <- switch(measure,
                       mod='Modularity',
                       E.global='Global efficiency',
-                      E.global.wt='Global efficiency (weighted)',
+                      E.global.wt='Weighted global efficiency',
                       Cp='Clustering coefficient',
                       Lp='Characteristic path length',
                       assort='Degree assortativity',
@@ -395,7 +404,12 @@ summary.brainGraph_permute <- function(object, measure=NULL,
                       transitivity='Local transitivity',
                       E.local='Local efficiency',
                       assort.lobe.hemi='Hemisphere lobe assortativity',
-                      spatial.dist='Spatial distance')
+                      spatial.dist='Spatial distance'
+                      mod.wt="Weighted modularity"
+                      Lp.wt="Weighted characteristic path length"
+                      rich.wt="Weighted rich-club coeffcient"
+                      E.local.wt="Weighted local efficiency"
+                      diameter.wt="Weighted diameter")
 
   p.sig <- match.arg(p.sig)
   perm.sum <- with(object, list(auc=auc, N=N, level=level, densities=densities,
