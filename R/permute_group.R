@@ -174,8 +174,9 @@ graph_attr_perm <- function(g, densities, atlas) {
   asymm <- sapply(g, sapply, function(x) edge_asymmetry(x)$asymm)
   diameter <- sapply(g, sapply, function(x) diameter(x, weights=NA))
   transitivity <- sapply(g, sapply, function(x) transitivity(x))
-  E.local <- sapply(g, sapply, function(x) mean(efficiency(x, type='nodal', weights=NA)))
-  vulnerability <- sapply(g, sapply, function(x) max(vulnerability(x, use.parallel=use.parallel)))
+  E.local <- sapply(g, sapply, function(x) mean(efficiency(x, 
+                        type='local', weights=NA, use.parallel=TRUE, A=A)))
+  vulnerability <- sapply(g, sapply, function(x) max(vulnerability(x, use.parallel=TRUE)))
   assort.lobe.hemi <- sapply(g, sapply, function(x) assortativity_nominal(x, V(x)$lobe.hemi))
   spatial.dist <- sapply(g, sapply, function(x) mean(x, edge_spatial_dist(x)))
                      
