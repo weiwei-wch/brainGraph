@@ -415,7 +415,10 @@ summary.brainGraph_permute <- function(object, measure=NULL,
     } else {
       sum.dt[, p.fdr := p.adjust(p, 'fdr'), by=densities]
     }
+  }else{
+    sum.dt[, p.fdr := p.adjust(p, 'fdr'), by=densities]
   }
+    
 
   meas.full <- switch(measure,
                       mod='Modularity',
