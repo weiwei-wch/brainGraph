@@ -373,14 +373,20 @@ summary.brainGraph_permute <- function(object, measure=NULL,
                      by=c('densities', 'region'))
 
   alt <- match.arg(alternative)
+  meanPermDT <- permDT[, mean(get(measure))]
+  stdPermDT <- permDT[, sd(get(measure))]
+  obsDiff <- object$obs.diff[[measure]]
   if (alt == 'two.sided') {
-    result.dt[, p := (sum(abs(get(measure)) >= abs(unique(obs.diff))) + 1) / (.N + 1), by=key(result.dt)]
+    if (obsDiff > meanPermDT){
+    result.dt[, p := 2*（1-pnorm(obsDiff, meanPermDT, stdPermDT)), by=key(result.dt)]
+    }else{
+    result.dt[, p := 2*（1-pnorm((obsDiff+meanPermDT), meanPermDT, stdPermDT)), by=key(result.dt)]}
     CI <- c(alpha / 2, 1 - (alpha / 2))
   } else if (alt == 'less') {
-    result.dt[, p := (sum(get(measure) <= unique(obs.diff)) + 1) / (.N + 1), by=key(result.dt)]
+    result.dt[, p := pnorm(obsDiff, meanPermDT, stdPermDT), by=key(result.dt)]
     CI <- c(alpha, 1)
   } else if (alt == 'greater') {
-    result.dt[, p := (sum(get(measure) >= unique(obs.diff)) + 1) / (.N + 1), by=key(result.dt)]
+    result.dt[, p := (1-pnorm(obsDiff, meanPermDT, stdPermDT)), by=key(result.dt)]
     CI <- c(1 / N, 1 - alpha)
   }
   result.dt[, c('ci.low', 'ci.high') := as.list(sort(get(measure))[ceiling(.N * CI)]), by=key(result.dt)]
