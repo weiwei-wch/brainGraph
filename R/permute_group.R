@@ -377,7 +377,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
   stdPermDT <- permDT[, sd(get(measure))]
   obsDiff <- object$obs.diff[[measure]]
   if (alt == 'two.sided') {
-    if (obsDiff > meanPermDT){
+    if isTRUE(obsDiff > meanPermDT){
     result.dt[, p := 2*(1-pnorm(obsDiff, meanPermDT, stdPermDT)), by=key(result.dt)]
     }else{
     result.dt[, p := 2*(1-pnorm((obsDiff+meanPermDT), meanPermDT, stdPermDT)), by=key(result.dt)]}
