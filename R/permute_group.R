@@ -356,9 +356,9 @@ summary.brainGraph_permute <- function(object, measure=NULL,
       sum.dt[, (paste0(measure, '.', object$groups)) := as.list(obs)]
       sum.dt[, obs.diff := object$obs.diff[[measure]]]
       sum.dt[, perm.diff := permDT[, mean(get(measure))]]
-
+      densities=1
+      permDT[, densities := 1]
       permDT[, densities := 1, key=c("region","densities")]
-
     } else {
       sum.dt <- data.table(densities=object$densities, region='graph')
       for (i in seq_along(object$groups)) {
@@ -381,25 +381,25 @@ summary.brainGraph_permute <- function(object, measure=NULL,
   obsDiff <- object$obs.diff[[measure]]
   if (alt == 'two.sided') {
     for (i in 1:length(obsDiff)) {
-       if (isTRUE(obsDiff[i] > as.numeric(meanPermDT[i,2]))){
-       p[i] <- 2*(1-pnorm(obsDiff[i], as.numeric(meanPermDT[i,2]), as.numeric(stdPermDT[i,2])))
+       if (isTRUE(obsDiff[i] > as.numeric(meanPermDT[i,3]))){
+       p[i] <- 2*(1-pnorm(obsDiff[i], as.numeric(meanPermDT[i,3]), as.numeric(stdPermDT[i,3])))
        }else{
-       p[i] <- 2*(1-pnorm(obsDiff[i]+as.numeric(meanPermDT[i,2]), as.numeric(meanPermDT[i,2]), as.numeric(stdPermDT[i,2])))}
+       p[i] <- 2*(1-pnorm(obsDiff[i]+as.numeric(meanPermDT[i,3]), as.numeric(meanPermDT[i,3]), as.numeric(stdPermDT[i,2])))}
     }
-    pVal<-data.frame(region="graph",densities=densities,p=p,key=c("densities", "region"))
+    pVal<-data.table(region="graph",densities=densities,p=p,key=c("densities", "region"))
     CI <- c(alpha / 2, 1 - (alpha / 2))
                    
   } else if (alt == 'less') {
     for (i in 1:length(obsDiff)) {
-       p[i] <- pnorm(obsDiff[i], as.numeric(meanPermDT[i,2]), as.numeric(stdPermDT[i,2]))
+       p[i] <- pnorm(obsDiff[i], as.numeric(meanPermDT[i,3]), as.numeric(stdPermDT[i,3]))
     }
-    pVal<-data.frame(region="graph",densities=densities,p=p,key=c("densities", "region"))
+    pVal<-data.table(region="graph",densities=densities,p=p,key=c("densities", "region"))
     CI <- c(alpha, 1)
   } else if (alt == 'greater') {
     for (i in 1:length(obsDiff)) {
-       p[i] <- 1-pnorm(obsDiff[i], as.numeric(meanPermDT[i,2]), as.numeric(stdPermDT[i,2]))
+       p[i] <- 1-pnorm(obsDiff[i], as.numeric(meanPermDT[i,3]), as.numeric(stdPermDT[i,3]))
     }
-    pVal<-data.frame(region="graph",densities=densities,p=p,key=c("densities", "region"))
+    pVal<-data.table(region="graph",densities=densities,p=p,key=c("densities", "region"))
     CI <- c(1 / N, 1 - alpha)
   }
   result.dt[, c('ci.low', 'ci.high') := as.list(sort(get(measure))[ceiling(.N * CI)]), by=key(result.dt)]
