@@ -351,15 +351,15 @@ summary.brainGraph_permute <- function(object, measure=NULL,
 
     obs <- meas.list[[measure]]
     if (isTRUE(object$auc)) {
+      densities=1
       obs <- apply(obs, 2, function(y) sum(diff(object$densities) * (head(y, -1) + tail(y, -1))) / 2)
       sum.dt <- data.table(densities=1, region='graph')
       sum.dt[, (paste0(measure, '.', object$groups)) := as.list(obs)]
       sum.dt[, obs.diff := object$obs.diff[[measure]]]
       sum.dt[, perm.diff := permDT[, mean(get(measure))]]
-      densities=1
       permDT[, densities := 1]
-      permDT[, densities := 1, key=c("region","densities")]
     } else {
+      densities=object$densities
       sum.dt <- data.table(densities=object$densities, region='graph')
       for (i in seq_along(object$groups)) {
         sum.dt[, paste0(measure, '.', object$groups[i]) := obs[, i]]
@@ -368,6 +368,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
       sum.dt[, perm.diff := permDT[, mean(get(measure)), by=list(densities, region)]$V1]
     }
   }
+  setkey(permDT,"region","densities")
   result.dt <- merge(permDT[, c('densities', 'region', measure), with=F],
                      sum.dt[, c('densities', 'region', 'obs.diff'), with=F],
                      by=c('densities', 'region'))
