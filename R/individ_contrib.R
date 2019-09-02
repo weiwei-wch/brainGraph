@@ -36,7 +36,7 @@
 #'   from group-based structural correlations networks}. NeuroImage, 120:274-284.
 #'   doi:10.1016/j.neuroimage.2015.07.006
 
-loo <- function(resids, corrs, level=c('global', 'regional')，densities=0.2) {
+loo <- function(resids, corrs, level=c('global', 'regional'), densities=0.2) {
   Group <- Study.ID <- i <- NULL
   densities=densities
   stopifnot(inherits(resids, 'brainGraph_resids'))
