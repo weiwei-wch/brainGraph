@@ -47,7 +47,7 @@ loo <- function(resids, corrs, level=c('global', 'regional'), densities) {
   if (level == 'global') {
     IC <- foreach (i=seq_len(nrow(resids$resids.all)), .combine='c') %dopar% {
       resids.excl <- resids[-i]
-      new.corrs <- corr.matrix(resids.excl, densities=densities)
+      new.corrs <- corr.matrix(resids.excl[group.vec[i]], densities=densities)
 
       1-mantel.rtest(as.dist(corrs[[group.num[i]]]$R),
                        as.dist(new.corrs[[1]]$R),
@@ -58,7 +58,7 @@ loo <- function(resids, corrs, level=c('global', 'regional'), densities) {
   } else if (level == 'regional') {
     RC <- foreach (i=seq_len(nrow(resids$resids.all)), .combine='rbind') %dopar% {
       resids.excl <- resids[-i]
-      new.corrs <- corr.matrix(resids.excl, densities=densities)
+      new.corrs <- corr.matrix(resids.excl[group.vec[i]], densities=densities)
       colSums(abs(corrs[[group.num[i]]]$R - new.corrs[[1]]$R))
     }
     RC.dt <- cbind(resids$resids.all[, list(Study.ID, Group)], RC)
