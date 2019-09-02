@@ -47,7 +47,7 @@ loo <- function(resids, corrs, level=c('global', 'regional'), densities) {
   if (level == 'global') {
     IC <- foreach (i=seq_len(nrow(resids$resids.all)), .combine='c') %dopar% {
       resids.excl <- resids[-i]
-      new.corrs <- corr.matrix(resids.excl, densities=densities
+      new.corrs <- corr.matrix(resids.excl, densities=densities)
 
       1-mantel.rtest(as.dist(corrs[[group.num[i]]]$R),
                        as.dist(new.corrs[[1]]$R),
