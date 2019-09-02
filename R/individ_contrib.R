@@ -36,8 +36,9 @@
 #'   from group-based structural correlations networks}. NeuroImage, 120:274-284.
 #'   doi:10.1016/j.neuroimage.2015.07.006
 
-loo <- function(resids, corrs, level=c('global', 'regional')) {
+loo <- function(resids, corrs, level=c('global', 'regional')，densities=0.2) {
   Group <- Study.ID <- i <- NULL
+  densities=densities
   stopifnot(inherits(resids, 'brainGraph_resids'))
   level <- match.arg(level)
   group.vec <- resids$resids.all$Group
@@ -46,7 +47,7 @@ loo <- function(resids, corrs, level=c('global', 'regional')) {
   if (level == 'global') {
     IC <- foreach (i=seq_len(nrow(resids$resids.all)), .combine='c') %dopar% {
       resids.excl <- resids[-i]
-      new.corrs <- corr.matrix(resids.excl, densities=0.1)
+      new.corrs <- corr.matrix(resids.excl, densities=densities
 
       1 - mantel.rtest(as.dist(corrs[[group.num[i]]]$R),
                        as.dist(new.corrs[[1]]$R),
@@ -57,7 +58,7 @@ loo <- function(resids, corrs, level=c('global', 'regional')) {
   } else if (level == 'regional') {
     RC <- foreach (i=seq_len(nrow(resids$resids.all)), .combine='rbind') %dopar% {
       resids.excl <- resids[-i]
-      new.corrs <- corr.matrix(resids.excl, densities=0.1)
+      new.corrs <- corr.matrix(resids.excl, densities=densities)
       colSums(abs(corrs[[group.num[i]]]$R - new.corrs[[1]]$R))
     }
     RC.dt <- cbind(resids$resids.all[, list(Study.ID, Group)], RC)
