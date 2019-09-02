@@ -57,7 +57,7 @@ loo <- function(resids, corrs, level=c('global', 'regional')) {
   } else if (level == 'regional') {
     RC <- foreach (i=seq_len(nrow(resids$resids.all)), .combine='rbind') %dopar% {
       resids.excl <- resids[-i]
-      new.corrs <- corr.matrix(resids.excl[group.vec[i]], densities=0.1)
+      new.corrs <- corr.matrix(resids.excl, densities=0.1)
       colSums(abs(corrs[[group.num[i]]]$R - new.corrs[[1]]$R))
     }
     RC.dt <- cbind(resids$resids.all[, list(Study.ID, Group)], RC)
