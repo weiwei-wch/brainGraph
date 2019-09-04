@@ -64,7 +64,10 @@
 brainGraph_permute <- function(densities, resids, N=5e3, perms=NULL, auc=FALSE,
                                level=c('graph', 'vertex', 'other'),
                                measure=c('btwn.cent', 'degree', 'E.nodal', 'ev.cent',
-                                         'knn', 'transitivity', 'vulnerability'),
+                                         'knn', 'transitivity', 'vulnerability', 'asymm', 'dist', 'dist.strength', 'Lp', 
+                                         'lev.cent', 'k.core', 'hubs', 'E.local', 'eccentricity', 
+                                         'strength', 'knn.wt', 's.core', 'transitivity.wt', 'E.local.wt', 'E.nodal.wt', 
+                                         'Lp.wt', 'hubs.wt'),
                                atlas=NULL, .function=NULL, weighted=FALSE,
                                xfm.type=c('1/w', '-log(w)', '1-w'),
                                clust.method='louvain') {
@@ -201,7 +204,8 @@ graph_attr_perm_weighted <- function(g, densities, atlas,
   strength <- sapply(g, sapply, function(x) mean(graph.strength(x)))
   
   g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
-  Lp.wt <- sapply(g1, sapply, function(x) mean(distances(x)[upper.tri(distances(x))], na.rm=T))
+  Lp.wt <- sapply(g1, sapply, function(x) 
+    mean(distances(x)[upper.tri(distances(x)[is.infinite(distances(x))]<-NA)], na.rm=T))
   diameter.wt <- sapply(g1, sapply, diameter)
   E.global.wt <- sapply(g1, sapply, function(x) mean(efficiency(x, 'nodal')))
   E.local.wt <- sapply(g1, sapply, function(x)
@@ -221,6 +225,7 @@ graph_attr_perm_diffs <- function(densities, meas.list, auc) {
   }
   return(tmp)
 }
+                      
 permute_graph_foreach <- function(perms, densities, resids, groups, atlas, auc) {
   i <- NULL
   res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
@@ -229,15 +234,18 @@ permute_graph_foreach <- function(perms, densities, resids, groups, atlas, auc) 
     graph_attr_perm_diffs(densities, meas.list, auc)
   }
 }
+                      
 permute_graph_foreach_weighted <- function(perms, densities, resids, groups, atlas, auc, 
                                            xfm.type=c('1/w', '-log(w)', '1-w'), clust.method='louvain') {
   i <- NULL
+  xfm.type <- match.arg(xfm.type)
   res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
     g <- make_graphs_perm_weighted(densities, resids, perms[i, ], groups)
     meas.list <- graph_attr_perm_weighted(g, densities, atlas, xfm.type)
     graph_attr_perm_diffs(densities, meas.list, auc)
   }
 }
+                      
 # Vertex-level
 vertex_attr_perm <- function(measure, g, densities) {
   switch(measure,
@@ -247,17 +255,54 @@ vertex_attr_perm <- function(measure, g, densities) {
     ev.cent=lapply(g, function(x) t(sapply(x, function(y) centr_eigen(y)$vector))),
     knn=lapply(g, function(x) t(sapply(x, function(y) graph.knn(y)$knn))),
     transitivity=lapply(g, function(x) t(sapply(x, transitivity,type='local', isolates='zero'))),
+    asymm=lapply(g, function(x) t(sapply(x, function(y) edge_asymmetry(y, 'vertex')$asymm))),
+    dist=lapply(g, function(x) t(sapply(x, vertex_spatial_dist)),
+    dist.strength=lapply(g, function(x) t(sapply(x, function(y) vertex_spatial_dist(y)*degree(y)))),
+    Lp=lapply(g, function(x) t(sapply(x, mean_distance))),
+    lev.cent=lapply(g, function(x) t(sapply(x, centr_lev))),
+    k.core=lapply(g, function(x) t(sapply(x, coreness))),
+    E.local=lapply(g, function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=use.parallel, A=A))),
+    eccentricity=lapply(g, function(x) t(sapply(x, eccentricity))),
+    hubs=lapply(g, function(x) t(sapply(x, hubness, weights=NA))),
     lapply(g, function(x) t(sapply(x, function(y) centr_betw(y)$res))))
 }
+
+vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w', '-log(w)', '1-w')) {
+  xfm.type <- match.arg(xfm.type)
+  switch(measure,
+    strength=lapply(g, function(x) t(sapply(x, graph.strength))),
+    knn.wt=lapply(g, function(x) t(sapply(x, function(y) graph.knn(y)$knn))),
+    transitivity.wt=lapply(g, function(x) t(sapply(x, transitivity, type='weighted'))),
+    hubs.wt=lapply(g, function(x) t(sapply(x, hubness))),
+    s.score=lapply(g, function(x) t(sapply(x, s.score, A)))，
+    Lp.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
+      lapply(xfm.weights(g), function(x) t(sapply(x, mean_distance)))},
+    E.local.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
+      lapply(xfm.weights(g), function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=use.parallel, A=A)))},
+    E.nodal.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
+      lapply(xfm.weights(g), function(x) t(sapply(x, efficiency, 'nodal')))}
+}
+                                   
 permute_vertex_foreach <- function(perms, densities, resids, groups, measure, diffFun) {
   i <- NULL
   res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
-    g <- make_graphs_perm(densities, resids, perms[i, ], groups)
+    g <- make_graphs_perm_weighted(densities, resids, perms[i, ], groups)
+    meas.list <- vertex_attr_perm_weighted(measure, g, densities, xfm.type)
+    diffFun(densities, meas.list)
+  }
+}
+             
+permute_vertex_foreach_weighted <- function(perms, densities, resids, groups, measure, 
+                                            diffFun, xfm.type=c('1/w', '-log(w)', '1-w')) {
+  i <- NULL
+  xfm.type <- match.arg(xfm.type)
+  res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
+    g <- make_graphs_perm_weighted(densities, resids, perms[i, ], groups)
     meas.list <- vertex_attr_perm(measure, g, densities)
     diffFun(densities, meas.list)
   }
 }
-
+             
 # Other-level
 permute_other_foreach <- function(perms, densities, resids, groups, .function) {
   i <- NULL
