@@ -265,7 +265,7 @@ vertex_attr_perm <- function(measure, g, densities) {
     E.local=lapply(g, function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=use.parallel, A=A))),
     eccentricity=lapply(g, function(x) t(sapply(x, eccentricity))),
     hubs=lapply(g, function(x) t(sapply(x, hubness, weights=NA))),
-    lapply(g, function(x) t(sapply(x, function(y) centr_betw(y)$res)))
+    lapply(g, function(x) t(sapply(x, function(y) centr_betw(y)$res))))
 }
 
 vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w', '-log(w)', '1-w')) {
