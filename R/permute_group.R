@@ -287,7 +287,7 @@ vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w',
 permute_vertex_foreach <- function(perms, densities, resids, groups, measure, diffFun) {
   i <- NULL
   res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
-    g <- make_graphs_perm_weighted(densities, resids, perms[i, ], groups)
+    g <- make_graphs_perm(densities, resids, perms[i, ], groups)
     meas.list <- vertex_attr_perm(measure, g, densities, xfm.type)
     diffFun(densities, meas.list)
   }
