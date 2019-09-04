@@ -287,15 +287,15 @@ summary.brainGraph_permute <- function(object, measure=NULL,
                                        alternative=c('two.sided', 'less', 'greater'),
                                        alpha=0.05, p.sig=c('p', 'p.fdr'), ...) {
   perm.diff <- p <- N <- p.fdr <- region <- obs.diff <- NULL
-
+  
   permDT <- copy(object$DT)
   if (object$graphtype == 'weighted'){
-  g <- with(object, make_graphs_perm_weighted(densities, resids, 1:nrow(resids$resids.all),
-                                     resids$resids.all[, as.numeric(Group)]))
+    g <- with(object, make_graphs_perm_weighted(densities, resids, 1:nrow(resids$resids.all),
+                                                resids$resids.all[, as.numeric(Group)]))
   }else{
-  g <- with(object, make_graphs_perm(densities, resids, 1:nrow(resids$resids.all),
-                                     resids$resids.all[, as.numeric(Group)]))}
-    
+    g <- with(object, make_graphs_perm(densities, resids, 1:nrow(resids$resids.all),
+                                       resids$resids.all[, as.numeric(Group)]))}
+  
   # OTHER
   #-------------------------------------
   if (object$level == 'other') {  # Hack to figure out which level it is when level="other"
@@ -305,7 +305,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
       object$level <- 'graph'
     }
   }
-
+  
   # VERTEX-LEVEL
   #-------------------------------------
   if (object$level == 'vertex') {
@@ -313,7 +313,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
     measure <- object$measure
     obsDT <- copy(object$obs.diff)
     meas.list <- with(object, vertex_attr_perm(measure, g, densities))
-
+    
     if (isTRUE(object$auc)) {
       obs <- lapply(meas.list, apply, 2, function(y) sum(diff(object$densities) * (head(y, -1) + tail(y, -1))) / 2)
       permDT[, densities := 1]
@@ -334,9 +334,9 @@ summary.brainGraph_permute <- function(object, measure=NULL,
     setkeyv(permDT, key(sum.dt))
     permdiff <- permDT[, list(perm.diff=mean(get(measure))), by=list(densities, region)]
     sum.dt <- merge(sum.dt, permdiff, by=key(sum.dt))
-
-  # GRAPH-LEVEL
-  #-------------------------------------
+    
+    # GRAPH-LEVEL
+    #-------------------------------------
   } else if (object$level == 'graph') {
     if (is.null(measure)) measure <- 'mod'
     stopifnot(measure %in% names(permDT))
@@ -348,7 +348,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
       meas.list <- with(object, graph_attr_perm_weighted(g, densities, atlas))
     }else{
       meas.list <- with(object, graph_attr_perm(g, densities, atlas))}
-
+    
     obs <- meas.list[[measure]]
     if (isTRUE(object$auc)) {
       densities=1
@@ -369,42 +369,53 @@ summary.brainGraph_permute <- function(object, measure=NULL,
     }
   }
   setkey(permDT,"region","densities")
+  
+  #get P value
   result.dt <- merge(permDT[, c('densities', 'region', measure), with=F],
                      sum.dt[, c('densities', 'region', 'obs.diff'), with=F],
                      by=c('densities', 'region'))
-
+  
   alt <- match.arg(alternative)
   #meanPermDT <- permDT[, mean(get(measure))]
   #stdPermDT <- permDT[, sd(get(measure))]
-  #bsDiff <- object$obs.diff[[measure]]
+  #obsDiff <- object$obs.diff[[measure]]
   meanPermDT <- permDT[, mean(get(measure)),by=key(permDT)]
   stdPermDT <- permDT[, sd(get(measure)),by=key(permDT)]
+  if (object$level == 'graph'){
   obsDiff <- object$obs.diff[[measure]]
+  num.p <- length(obsDiff)
+  }
+  if (object$level == 'vertex'){
+  obsDiff <- melt(object$obs.diff,id.vars='densities',variable.name='region')
+  obsDiff <- obsDiff[order(obsDiff$densities)]
+  obsDiff <- obsDiff[,3]
+  num.p <- nrow(obsDiff)
+  }
   if (alt == 'two.sided') {
-    for (i in 1:length(obsDiff)) {
-       if (isTRUE(obsDiff[i] > as.numeric(meanPermDT[i,3]))){
-       p[i] <- 2*(1-pnorm(obsDiff[i], as.numeric(meanPermDT[i,3]), as.numeric(stdPermDT[i,3])))
-       }else{
-       p[i] <- 2*(1-pnorm(obsDiff[i]+as.numeric(meanPermDT[i,3]), as.numeric(meanPermDT[i,3]), as.numeric(stdPermDT[i,2])))}
+    for (i in 1:num.p) {
+      if (isTRUE (as.numeric(obsDiff[i]) > as.numeric(meanPermDT[i,3]))){
+        p[i] <- 2*(1-(pnorm(as.numeric(obsDiff[i]), as.numeric(meanPermDT[i,3]), as.numeric(stdPermDT[i,3]))))
+      }else{
+        p[i] <- 2*(pnorm(as.numeric(obsDiff[i]), as.numeric(meanPermDT[i,3]), as.numeric(stdPermDT[i,2])))}
     }
     pVal<-data.table(region="graph",densities=densities,p=p,key=c("densities", "region"))
     CI <- c(alpha / 2, 1 - (alpha / 2))
-                   
   } else if (alt == 'less') {
-    for (i in 1:length(obsDiff)) {
-       p[i] <- pnorm(obsDiff[i], as.numeric(meanPermDT[i,3]), as.numeric(stdPermDT[i,3]))
+    for (i in 1:num.p) {
+      p[i] <- pnorm(obsDiff[i], as.numeric(meanPermDT[i,3]), as.numeric(stdPermDT[i,3]))
     }
     pVal<-data.table(region="graph",densities=densities,p=p,key=c("densities", "region"))
     CI <- c(alpha, 1)
   } else if (alt == 'greater') {
-    for (i in 1:length(obsDiff)) {
-       p[i] <- 1-pnorm(obsDiff[i], as.numeric(meanPermDT[i,3]), as.numeric(stdPermDT[i,3]))
+    for (i in 1:num.p) {
+      p[i] <- 1-(pnorm(as.numeric(obsDiff[i]), as.numeric(meanPermDT[i,3]), as.numeric(stdPermDT[i,3])))
     }
     pVal<-data.table(region="graph",densities=densities,p=p,key=c("densities", "region"))
     CI <- c(1 / N, 1 - alpha)
   }
   result.dt[, c('ci.low', 'ci.high') := as.list(sort(get(measure))[ceiling(.N * CI)]), by=key(result.dt)]
   result.dt <- result.dt[, .SD[1], by=key(result.dt)]
+  pVal[['region']]<-result.dt[['region']]
   result.dt<-merge(result.dt, pVal, by=key(result.dt))    
   sum.dt <- merge(sum.dt, result.dt[, !c(measure, 'obs.diff'), with=F], by=key(result.dt))
   setcolorder(sum.dt,
@@ -419,8 +430,8 @@ summary.brainGraph_permute <- function(object, measure=NULL,
   }else{
     sum.dt[, p.fdr := p.adjust(p, 'fdr'), by=densities]
   }
-    
-
+  
+  
   meas.full <- switch(measure,
                       mod='Modularity',
                       E.global='Global efficiency',
@@ -444,7 +455,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
                       Lp.wt="Weighted characteristic path length",
                       E.local.wt="Weighted local efficiency",
                       diameter.wt="Weighted diameter")
-
+  
   p.sig <- match.arg(p.sig)
   perm.sum <- with(object, list(auc=auc, N=N, level=level, densities=densities,
                                 DT.sum=sum.dt, meas.full=meas.full, groups=groups,
