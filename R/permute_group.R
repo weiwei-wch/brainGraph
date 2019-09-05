@@ -147,8 +147,8 @@ brainGraph_permute <- function(densities, resids, N=5e3, perms=NULL, auc=FALSE,
 # Helper functions
 #==============================================================================
 # Lpv.wt generated
-Lpv_wt_gen <- function(g) {
-  Lpv.wt <- distances(g)
+Lpv_wt_gen <- function(graph) {
+  Lpv.wt <- distances(graph)
   Lpv.wt[is.infinite(Lpv.wt)] <- NA
   Lpv.wt
 }
@@ -270,7 +270,7 @@ vertex_attr_perm <- function(measure, g, densities) {
     Lp=lapply(g, function(x) t(sapply(x, mean_distance))),
     lev.cent=lapply(g, function(x) t(sapply(x, centr_lev))),
     k.core=lapply(g, function(x) t(sapply(x, coreness))),
-    E.local=lapply(g, function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=use.parallel, A=A))),
+    E.local=lapply(g, function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=TRUE, A=A))),
     eccentricity=lapply(g, function(x) t(sapply(x, eccentricity))),
     hubs=lapply(g, function(x) t(sapply(x, hubness, weights=NA))),
     btwn.cent=lapply(g, function(x) t(sapply(x, function(y) centr_betw(y)$res))))
@@ -285,7 +285,8 @@ vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w',
     hubs.wt=lapply(g, function(x) t(sapply(x, hubness))),
     s.score=lapply(g, function(x) t(sapply(x, s.score, A))),
     Lp.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
-      lapply(g1, function(x) t(sapply(x, function(y) rowMeans(Lpv_wt_gen(y), na.rm=TRUE))))},
+      Lpv_wt <- lapply(g1, function(x) t(sapply(x, function(y) Lpv_wt_gen(y))))
+      lapply(Lpv_wt, function(x) t(sapply(x, rowMeans, rm.na=TRUE)))}
     E.local.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
       lapply(g1, function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=TRUE, A=A)))},
     E.nodal.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
@@ -319,15 +320,7 @@ permute_other_foreach <- function(perms, densities, resids, groups, .function) {
     g <- make_graphs_perm(densities, resids, perms[i, ], groups)
     .function(g, densities)
   }
-}
-
-# Lpv.wt generated
-Lpv_wt_gen <- function(g) {
-  Lpv.wt <- distances(g)
-  Lpv.wt[is.infinite(Lpv.wt)] <- NA
-  Lpv.wt
-}
-                             
+}                       
 
 #==============================================================================
 # Methods
