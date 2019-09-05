@@ -366,7 +366,10 @@ summary.brainGraph_permute <- function(object, measure=NULL,
     densities <- object$densities
     measure <- object$measure
     obsDT <- copy(object$obs.diff)
-    meas.list <- with(object, vertex_attr_perm(measure, g, densities))
+    if (object$graphtype == 'weighted'){
+      meas.list <- with(object, vertex_attr_perm_weighted(measure, g, densities))
+    }else{
+      meas.list <- with(object, vertex_attr_perm(measure, g, densities))}
     
     if (isTRUE(object$auc)) {
       obs <- lapply(meas.list, apply, 2, function(y) sum(diff(object$densities) * (head(y, -1) + tail(y, -1))) / 2)
