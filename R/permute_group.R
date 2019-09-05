@@ -206,7 +206,7 @@ graph_attr_perm_weighted <- function(g, densities, atlas,
   
   g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
   Lp.wt <- sapply(g1, sapply, function(x) 
-    mean(distances(x)[upper.tri(distances(x)[is.infinite(distances(x))]<-NA)], na.rm=T))
+    mean(distances(x)[upper.tri(distances(x)[is.infinite(distances(x))<-NA])], na.rm=T))
   diameter.wt <- sapply(g1, sapply, diameter)
   E.global.wt <- sapply(g1, sapply, function(x) mean(efficiency(x, 'nodal')))
   E.local.wt <- sapply(g1, sapply, function(x)
@@ -265,7 +265,7 @@ vertex_attr_perm <- function(measure, g, densities) {
     E.local=lapply(g, function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=use.parallel, A=A))),
     eccentricity=lapply(g, function(x) t(sapply(x, eccentricity))),
     hubs=lapply(g, function(x) t(sapply(x, hubness, weights=NA))),
-    lapply(g, function(x) t(sapply(x, function(y) centr_betw(y)$res))))
+    btwn.cent=lapply(g, function(x) t(sapply(x, function(y) centr_betw(y)$res))))
 }
 
 vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w', '-log(w)', '1-w')) {
@@ -277,11 +277,11 @@ vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w',
     hubs.wt=lapply(g, function(x) t(sapply(x, hubness))),
     s.score=lapply(g, function(x) t(sapply(x, s.score, A))),
     Lp.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
-      lapply(g1, function(x) t(sapply(x, function(y) rowMeans(distances(y)[is.infinite(distances(y))]<-NA, na.rm=TRUE))))},
+      lapply(g1, function(x) t(sapply(x, function(y) rowMeans(distances(y)[is.infinite(distances(y))<-NA], na.rm=TRUE))))},
     E.local.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
-      lapply(xfm.weights(g), function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=use.parallel, A=A)))},
+      lapply(g1, function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=use.parallel, A=A)))},
     E.nodal.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
-      lapply(xfm.weights(g), function(x) t(sapply(x, efficiency, 'nodal')))})
+      lapply(g1, function(x) t(sapply(x, efficiency, 'nodal')))})
 }
                                    
 permute_vertex_foreach <- function(perms, densities, resids, groups, measure, diffFun) {
