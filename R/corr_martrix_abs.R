@@ -85,6 +85,8 @@ corr.matrix.abs <- function(resids, densities, thresholds=NULL, what=c('resids',
   if (!is.null(exclude.reg)) res.all <- res.all[, -exclude.reg, with=FALSE]
 
   for (g in groups) {
+    xtry<-try(corrs <- rcorr(as.matrix(res.all[g, !'Group']), type=type), silent=TRUE)
+    if (inherits(xtry, "try-error")) next
     corrs <- rcorr(as.matrix(res.all[g, !'Group']), type=type)
     r <- abs(corrs$r)
     p <- corrs$P
