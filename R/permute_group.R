@@ -205,8 +205,9 @@ graph_attr_perm_weighted <- function(g, densities, atlas,
   strength <- sapply(g, sapply, function(x) mean(graph.strength(x)))
   
   g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
-  Lp.wt <- sapply(g1, sapply, function(x) 
-    mean(distances(x)[upper.tri(distances(x)[is.infinite(distances(x))<-NA])], na.rm=T))
+  Lpv.wt <- sapply(g1, x, distances)
+  Lpv.wt <- sapply(Lpv.wt, function(x) x[is.infinite(x)] <- NA)
+  Lp.wt <- sapply(Lpv.wt, function(x) mean(y[upper.tri(y)], na.rm=T)
   diameter.wt <- sapply(g1, sapply, diameter)
   E.global.wt <- sapply(g1, sapply, function(x) mean(efficiency(x, 'nodal')))
   E.local.wt <- sapply(g1, sapply, function(x)
@@ -277,7 +278,9 @@ vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w',
     hubs.wt=lapply(g, function(x) t(sapply(x, hubness))),
     s.score=lapply(g, function(x) t(sapply(x, s.score, A))),
     Lp.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
-      lapply(g1, function(x) t(sapply(x, function(y) rowMeans(distances(y)[is.infinite(distances(y))<-NA], na.rm=TRUE))))},
+      Lpv.wt <- lapply(g1, function(x) t(sapply(x, function(y) distances)))
+      Lpv.wt <- lapply(Lpv.wt, function(x) t(sapply(x, function(y) y[is.infinite(y)] <- NA)))
+      lapply(Lpv.wt, function(x) t(sapply(x, rowMeans, na.rm=TRUE)))},
     E.local.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
       lapply(g1, function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=use.parallel, A=A)))},
     E.nodal.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
