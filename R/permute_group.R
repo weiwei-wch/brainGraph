@@ -285,7 +285,7 @@ vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w',
     hubs.wt=lapply(g, function(x) t(sapply(x, hubness))),
     s.score=lapply(g, function(x) t(sapply(x, s.score, A))),
     Lp.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
-      lapply(g1, function(x) t(sapply(x, function(y) rowMeans(Lpv_wt_gen(y)))))},
+      lapply(g1, function(x) t(sapply(x, function(y) rowMeans(Lpv_wt_gen(y), na.rm=TRUE))))},
     E.local.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
       lapply(g1, function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=TRUE, A=A)))},
     E.nodal.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
