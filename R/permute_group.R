@@ -207,7 +207,7 @@ graph_attr_perm_weighted <- function(g, densities, atlas,
   g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
   Lpv.wt <- sapply(g1, x, distances)
   Lpv.wt <- sapply(Lpv.wt, function(x) x[is.infinite(x)] <- NA)
-  Lp.wt <- sapply(Lpv.wt, function(x) mean(y[upper.tri(y)], na.rm=T)
+  Lp.wt <- sapply(Lpv.wt, function(x) mean(y[upper.tri(y)], na.rm=T))
   diameter.wt <- sapply(g1, sapply, diameter)
   E.global.wt <- sapply(g1, sapply, function(x) mean(efficiency(x, 'nodal')))
   E.local.wt <- sapply(g1, sapply, function(x)
