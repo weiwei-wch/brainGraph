@@ -479,15 +479,10 @@ summary.brainGraph_permute <- function(object, measure=NULL,
               c('densities', 'region', paste0(measure, '.', object$groups), 'obs.diff',
                 'ci.low', 'ci.high', 'perm.diff', 'p'))
   if (!isTRUE(object$auc)) {
-    if (object$level == 'graph') {
       sum.dt[, p.fdr := p.adjust(p, 'fdr')]
-    } else {
-      sum.dt[, p.fdr := p.adjust(p, 'fdr'), by=densities]
-    }
   }else{
-    sum.dt[, p.fdr := p.adjust(p, 'fdr'), by=densities]
+      sum.dt[, p.fdr := p.adjust(p, 'fdr'), by=densities]
   }
-  
   
   meas.full <- switch(measure,
                       mod='Modularity',
