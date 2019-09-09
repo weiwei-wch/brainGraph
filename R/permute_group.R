@@ -451,7 +451,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
   }else{
        obsDiff <- melt(object$obs.diff,id.vars=NULL,variable.name='region')
        obsDiff <- obsDiff[,2]
-       num.p <- nrow(obsDiff)
+       num.p <- nrow(obsDiff)}
   }
     
   if (alt == 'two.sided') {
