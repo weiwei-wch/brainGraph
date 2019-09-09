@@ -443,11 +443,17 @@ summary.brainGraph_permute <- function(object, measure=NULL,
   num.p <- length(obsDiff)
   }
   if (object$level == 'vertex'){
-  obsDiff <- melt(object$obs.diff,id.vars='densities',variable.name='region')
-  obsDiff <- obsDiff[order(obsDiff$densities)]
-  obsDiff <- obsDiff[,3]
-  num.p <- nrow(obsDiff)
+    if (!isTRUE(auc)){
+       obsDiff <- melt(object$obs.diff,id.vars='densities',variable.name='region')
+       obsDiff <- obsDiff[order(obsDiff$densities)]
+       obsDiff <- obsDiff[,3]
+       num.p <- nrow(obsDiff)
+  }else{
+       obsDiff <- melt(object$obs.diff,id.vars=NULL,variable.name='region')
+       obsDiff <- obsDiff[,2]
+       num.p <- nrow(obsDiff)
   }
+    
   if (alt == 'two.sided') {
     for (i in 1:num.p) {
       if (isTRUE (as.numeric(obsDiff[i]) > as.numeric(meanPermDT[i,3]))){
