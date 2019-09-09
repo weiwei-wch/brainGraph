@@ -370,7 +370,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
       meas.list <- with(object, vertex_attr_perm_weighted(measure, g, densities))
     }else{
       meas.list <- with(object, vertex_attr_perm(measure, g, densities))}
-    
+  
     if (isTRUE(object$auc)) {
       obs <- lapply(meas.list, apply, 2, function(y) sum(diff(object$densities) * (head(y, -1) + tail(y, -1))) / 2)
       permDT[, densities := 1]
@@ -443,7 +443,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
   num.p <- length(obsDiff)
   }
   if (object$level == 'vertex'){
-    if (!isTRUE(auc)){
+    if (!isTRUE(object$auc)){
        obsDiff <- melt(object$obs.diff,id.vars='densities',variable.name='region')
        obsDiff <- obsDiff[order(obsDiff$densities)]
        obsDiff <- obsDiff[,3]
