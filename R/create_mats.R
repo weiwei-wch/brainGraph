@@ -84,7 +84,7 @@ create_mats <- function(A.files, modality=c('dti', 'fmri'),
                         div.files=NULL,
                         threshold.by=c('consensus', 'density', 'mean', 'consistency'),
                         mat.thresh=0, sub.thresh=0.5, inds=list(1:length(A.files)),
-                        algo=c('probabilistic', 'deterministic'), P=5e3, ...) {
+                        algo=c('probabilistic', 'deterministic'), P=5e3, neg=c('abs', 'To0'), ...) {
 
   # Argument checking
   #-----------------------------------------------------------------------------
@@ -98,7 +98,10 @@ create_mats <- function(A.files, modality=c('dti', 'fmri'),
   A <- read.array(A.files)
   Nv <- nrow(A)
   A[is.nan(A)] <- 0
-  A.norm <- A
+  if (neg == 'abs'){
+  A.norm <- abs(A)}
+  if (neg == 'To0'){
+  A.norm <- A}
 
   modality <- match.arg(modality)
   algo <- match.arg(algo)
