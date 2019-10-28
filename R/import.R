@@ -73,6 +73,8 @@ import_scn <- function(datadir, atlas, modality='thickness', exclude.subs=NULL, 
       parc <- 'aparc.DKTatlas40'
     } else if (atlas %in% c('destrieux', 'destrieux.scgm')) {
       parc <- 'aparc.a2009s'
+    } else if (atlas %in% c('Scheafer2018_200')){
+      parc <- 'Scheafer2018_200'
     } else {
       stop(paste0('Invalid atlas ', atlas, '. Choose from the following:\n',
                   paste(data(package='brainGraph')$results[, 3], collapse='\n')))
