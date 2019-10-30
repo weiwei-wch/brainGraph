@@ -66,7 +66,7 @@ brainGraph_permute <- function(densities, resids, N=5e3, perms=NULL, auc=FALSE,
                                measure=c('btwn.cent', 'degree', 'E.nodal', 'ev.cent',
                                          'knn', 'transitivity', 'vulnerability', 'asymm', 'dist', 'dist.strength', 'Lp', 
                                          'lev.cent', 'k.core', 'hubs', 'E.local', 'eccentricity', 
-                                         'strength', 'knn.wt', 's.core', 'transitivity.wt', 'E.local.wt', 'E.nodal.wt', 
+                                         'strength', 'knn.wt', 's.score', 'transitivity.wt', 'E.local.wt', 'E.nodal.wt', 
                                          'Lp.wt', 'hubs.wt'),
                                atlas=NULL, .function=NULL, weighted=FALSE,
                                xfm.type=c('1/w', '-log(w)', '1-w'),
@@ -296,7 +296,7 @@ permute_vertex_foreach <- function(perms, densities, resids, groups, measure, di
   i <- NULL
   res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
     g <- make_graphs_perm(densities, resids, perms[i, ], groups)
-    meas.list <- vertex_attr_perm(measure, g, densities, xfm.type)
+    meas.list <- vertex_attr_perm(measure, g, densities)
     diffFun(densities, meas.list)
   }
 }
@@ -307,7 +307,7 @@ permute_vertex_foreach_weighted <- function(perms, densities, resids, groups, me
   xfm.type <- match.arg(xfm.type)
   res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
     g <- make_graphs_perm_weighted(densities, resids, perms[i, ], groups)
-    meas.list <- vertex_attr_perm_weighted(measure, g, densities)
+    meas.list <- vertex_attr_perm_weighted(measure, g, densities, xfm.type)
     diffFun(densities, meas.list)
   }
 }
