@@ -339,7 +339,7 @@ permute_other_foreach <- function(perms, densities, resids, groups, .function) {
 
 summary.brainGraph_permute <- function(object, measure=NULL,
                                        alternative=c('two.sided', 'less', 'greater'),
-                                       alpha=0.05, p.sig=c('p', 'p.fdr'), accel=c('NULL','numeric','tail'),...) {
+                                       alpha=0.05, p.sig=c('p', 'p.fdr'), accel=c('tail','numeric','NULL'),...) {
   perm.diff <- p <- N <- p.fdr <- region <- obs.diff <- NULL
   
   permDT <- copy(object$DT)
@@ -438,12 +438,18 @@ summary.brainGraph_permute <- function(object, measure=NULL,
   #obsDiff <- object$obs.diff[[measure]]
   meanPermDT <- permDT[, mean(get(measure)),by=key(permDT)]
   stdPermDT <- permDT[, sd(get(measure)),by=key(permDT)]
-  setnames(permDT,measure,"value")
+  #setnames(permDT,measure,"value")
   if (object$level == 'graph'){
     obsDiff <- object$obs.diff[[measure]]
     num.p <- length(obsDiff)
+    obsDiff <- as.data.table(obsDiff)
+    setnames(obsDiff,"obsDiff","value")
+    permDT.temp=permDT[,.(densities,region)]
+    permDT.temp[,value:=permDT[[measure]]]
+    permDT=permDT.temp
   }
   if (object$level == 'vertex'){
+    setnames(permDT,measure,"value")
     if (!isTRUE(object$auc)){
       obsDiff <- melt(object$obs.diff,id.vars='densities',variable.name='region')
       obsDiff <- obsDiff[order(obsDiff$densities)]
@@ -469,8 +475,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
     result.dt[, c('ci.low', 'ci.high') := as.list(sort(get(measure))[ceiling(.N * CI)]), by=key(result.dt)]
     result.dt <- result.dt[, .SD[1], by=key(result.dt)]
     sum.dt <- merge(sum.dt, result.dt[, !c(measure, 'obs.diff'), with=F], by=key(result.dt))
-  }
-  if (accel == 'numeric') {
+  } else if (accel == 'numeric') {
     if (alt == 'two.sided') {
       for (i in 1:num.p) {
         if (isTRUE (as.numeric(obsDiff[i]) > as.numeric(meanPermDT[i,3]))){
@@ -498,8 +503,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
     pVal[['region']]<-result.dt[['region']]
     result.dt<-merge(result.dt, pVal, by=key(result.dt))    
     sum.dt <- merge(sum.dt, result.dt[, !c(measure, 'obs.diff'), with=F], by=key(result.dt))
-  }
-  if (accel == 'tail') {
+  } else if (accel == 'tail') {
     permN=object$N
     if (alt == 'two.sided') {
       writeMat('pareto_temp.mat',G=obsDiff[,1],Gdist=permDT[,3], meanGdist=meanPermDT[,3], num.p=num.p,N=permN)
@@ -511,6 +515,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
                         "save('paretoP_temp.mat','P','-v6')"))
       temp_paretoP<-readMat('paretoP_temp.mat')
       p <-temp_paretoP[["P"]][,1]
+      
       pVal<-data.table(region="graph",densities=densities,p=p,key=c("densities", "region"))
       CI <- c(alpha / 2, 1 - (alpha / 2))
     } else if (alt == 'less') {
@@ -624,7 +629,7 @@ print.summary.brainGraph_permute <- function(x, ...) {
 
 plot.brainGraph_permute <- function(x, measure=NULL,
                                     alternative=c('two.sided', 'less', 'greater'),
-                                    alpha=0.05, p.sig=c('p', 'p.fdr'), ptitle=NULL, accel=c('NULL','numeric','tail'),...) {
+                                    alpha=0.05, p.sig=c('p', 'p.fdr'), ptitle=NULL, accel=c('tail','numeric','NULL'),...) {
   densities <- Group <- sig <- trend <- yloc <- obs <- mylty <- ci.low <- ci.high <-
     variable <- value <- reg.num <- region <- perm.diff <- obs.diff <- NULL
   p.sig <- match.arg(p.sig)
