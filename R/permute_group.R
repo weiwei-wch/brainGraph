@@ -339,7 +339,7 @@ permute_other_foreach <- function(perms, densities, resids, groups, .function) {
 
 summary.brainGraph_permute <- function(object, measure=NULL,
                                        alternative=c('two.sided', 'less', 'greater'),
-                                       alpha=0.05, p.sig=c('p', 'p.fdr'), accel=c('NULL','numeric','tail')...) {
+                                       alpha=0.05, p.sig=c('p', 'p.fdr'), accel=c('NULL','numeric','tail'),...) {
   perm.diff <- p <- N <- p.fdr <- region <- obs.diff <- NULL
   
   permDT <- copy(object$DT)
