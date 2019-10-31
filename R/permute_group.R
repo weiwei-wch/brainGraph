@@ -624,7 +624,7 @@ print.summary.brainGraph_permute <- function(x, ...) {
 
 plot.brainGraph_permute <- function(x, measure=NULL,
                                     alternative=c('two.sided', 'less', 'greater'),
-                                    alpha=0.05, p.sig=c('p', 'p.fdr'), ptitle=NULL, ...) {
+                                    alpha=0.05, p.sig=c('p', 'p.fdr'), ptitle=NULL, accel=c('NULL','numeric','tail'),...) {
   densities <- Group <- sig <- trend <- yloc <- obs <- mylty <- ci.low <- ci.high <-
     variable <- value <- reg.num <- region <- perm.diff <- obs.diff <- NULL
   p.sig <- match.arg(p.sig)
@@ -634,7 +634,7 @@ plot.brainGraph_permute <- function(x, measure=NULL,
   } else {
     measure <- x$measure
   }
-  perm.sum <- summary(x, measure=measure, alternative=alternative, alpha=alpha)
+  perm.sum <- summary(x, measure=measure, alternative=alternative, alpha=alpha, accel=accel)
   sum.dt <- perm.sum$DT.sum
   if (is.null(ptitle)) ptitle <- perm.sum$meas.full
   ylabel2 <- sprintf('Observed and permutation difference (%s - %s)', x$groups[1], x$groups[2])
