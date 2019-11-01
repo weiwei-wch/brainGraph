@@ -42,6 +42,7 @@ plot_global <- function(tidy.dt, xvar=c('density', 'threshold'), vline=NULL,
     vars <- setdiff(names(perms$DT), 'densities')
     if (is.null(alt)) alt <- rep('two.sided', length(vars))
     for (i in seq_along(vars)) {
+      accel <- match.arg(accel)
       dt <- plot(perms, measure=vars[i], alternative=alt[i], accel=accel)[[1]]$data[variable == 'obs.diff']
       subDT[variable == vars[i], sig := dt$sig]
       subDT[variable == vars[i], trend := dt$trend]

@@ -433,6 +433,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
                      by=c('densities', 'region'))
   
   alt <- match.arg(alternative)
+  accel <- match.arg(accel)
   #meanPermDT <- permDT[, mean(get(measure))]
   #stdPermDT <- permDT[, sd(get(measure))]
   #obsDiff <- object$obs.diff[[measure]]
@@ -639,6 +640,7 @@ plot.brainGraph_permute <- function(x, measure=NULL,
   } else {
     measure <- x$measure
   }
+  accel <- match.arg(accel)
   perm.sum <- summary(x, measure=measure, alternative=alternative, alpha=alpha, accel=accel)
   sum.dt <- perm.sum$DT.sum
   if (is.null(ptitle)) ptitle <- perm.sum$meas.full
