@@ -75,6 +75,7 @@ brainGraph_permute <- function(densities, resids, N=5e3, perms=NULL, auc=FALSE,
   stopifnot(inherits(resids, 'brainGraph_resids'))
   measure <- match.arg(measure)
   level <- match.arg(level)
+  xfm.type <- match.arg(xfm.type)
   if (level == 'other') {
     if (is.null(.function) | !is.function(.function)) {
       stop(paste('Argument ".function" must be a function!'))
@@ -167,7 +168,7 @@ make_graphs_perm_weighted <- function(densities, resids, inds, groups) {
                     densities=densities, rand=TRUE))
   sapply(corrs, lapply, function(x)
     apply(x$r.thresh, 3, function(y)
-      graph_from_adjacency_matrix(x$R*y, mode='undirected', diag=F, weighted=T)))
+      graph_from_adjacency_matrix(x$R*y, mode='undirected', diag=F, weighted=TRUE)))
 }
 
 # Graph level
@@ -273,7 +274,7 @@ vertex_attr_perm <- function(measure, g, densities) {
          E.local=lapply(g, function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=TRUE, A=A))),
          eccentricity=lapply(g, function(x) t(sapply(x, eccentricity))),
          hubs=lapply(g, function(x) t(sapply(x, hubness, weights=NA))),
-         btwn.cent=lapply(g, function(x) t(sapply(x, function(y) centr_betw(y)$res))))
+         btwn.cent=lapply(g, function(x) t(sapply(x, function(y) betweeness(y)$v))))
 }
 
 vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w', '-log(w)', '1-w')) {
@@ -291,7 +292,7 @@ vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w',
          E.nodal.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
          lapply(g1, function(x) t(sapply(x, efficiency, 'nodal')))},
          btwn.cent.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
-         lapply(g1, function(x) t(sapply(x, function(y) centr_betw(y)$res)))})
+         lapply(g1, function(x) t(sapply(x, function(y) betweenness(y)$v)))})
 }
 
 permute_vertex_foreach <- function(perms, densities, resids, groups, measure, diffFun) {
@@ -585,7 +586,8 @@ summary.brainGraph_permute <- function(object, measure=NULL,
                       mod.wt="Weighted modularity",
                       Lp.wt="Weighted characteristic path length",
                       E.local.wt="Weighted local efficiency",
-                      diameter.wt="Weighted diameter")
+                      diameter.wt="Weighted diameter",
+                      btwn.cent.wt="Weighted betweenness centrality")
   
   p.sig <- match.arg(p.sig)
   perm.sum <- with(object, list(auc=auc, N=N, level=level, densities=densities,
