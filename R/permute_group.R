@@ -67,7 +67,7 @@ brainGraph_permute <- function(densities, resids, N=5e3, perms=NULL, auc=FALSE,
                                          'knn', 'transitivity', 'vulnerability', 'asymm', 'dist', 'dist.strength', 'Lp', 
                                          'lev.cent', 'k.core', 'hubs', 'E.local', 'eccentricity', 
                                          'strength', 'knn.wt', 's.score', 'transitivity.wt', 'E.local.wt', 'E.nodal.wt', 
-                                         'Lp.wt', 'hubs.wt'),
+                                         'Lp.wt', 'hubs.wt', 'btwn.cent.wt'),
                                atlas=NULL, .function=NULL, weighted=FALSE,
                                xfm.type=c('1/w', '-log(w)', '1-w'),
                                clust.method='louvain') {
@@ -289,7 +289,9 @@ vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w',
          E.local.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
          lapply(g1, function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=TRUE, A=A)))},
          E.nodal.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
-         lapply(g1, function(x) t(sapply(x, efficiency, 'nodal')))})
+         lapply(g1, function(x) t(sapply(x, efficiency, 'nodal')))}
+         btwn.cent.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
+         lapply(g1, function(x) t(sapply(x, function(y) centr_betw(y)$res)))})
 }
 
 permute_vertex_foreach <- function(perms, densities, resids, groups, measure, diffFun) {
