@@ -274,7 +274,7 @@ vertex_attr_perm <- function(measure, g, densities) {
          E.local=lapply(g, function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=TRUE, A=A))),
          eccentricity=lapply(g, function(x) t(sapply(x, eccentricity))),
          hubs=lapply(g, function(x) t(sapply(x, hubness, weights=NA))),
-         btwn.cent=lapply(g, function(x) t(sapply(x, function(y) betweeness(y)$v))))
+         btwn.cent=lapply(g, function(x) t(sapply(x, function(y) centr_betw(y)$res))))
 }
 
 vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w', '-log(w)', '1-w')) {
@@ -286,13 +286,13 @@ vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w',
          hubs.wt=lapply(g, function(x) t(sapply(x, hubness))),
          s.score=lapply(g, function(x) t(sapply(x, s.score, A))),
          Lp.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
-         Lpv_wt <- lapply(g1, function(x) t(sapply(x, function(y) rowMeans(Lpv_wt_gen(y), na.rm=TRUE))))},
+         lapply(g1, function(x) t(sapply(x, function(y) rowMeans(Lpv_wt_gen(y), na.rm=TRUE))))},
          E.local.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
          lapply(g1, function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=TRUE, A=A)))},
          E.nodal.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
          lapply(g1, function(x) t(sapply(x, efficiency, 'nodal')))},
          btwn.cent.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
-         lapply(g1, function(x) t(sapply(x, function(y) betweenness(y)$v)))})
+         lapply(g1, function(x) t(sapply(x, function(y) centr_betw(y)$res)))})
 }
 
 permute_vertex_foreach <- function(perms, densities, resids, groups, measure, diffFun) {
