@@ -67,7 +67,7 @@ brainGraph_permute <- function(densities, resids, N=5e3, perms=NULL, auc=FALSE,
                                          'knn', 'transitivity', 'vulnerability', 'asymm', 'dist', 'dist.strength', 'Lp', 
                                          'lev.cent', 'k.core', 'hubs', 'E.local', 'eccentricity', 
                                          'strength', 'knn.wt', 's.score', 'transitivity.wt', 'E.local.wt', 'E.nodal.wt', 
-                                         'Lp.wt', 'hubs.wt'),
+                                         'Lp.wt', 'hubs.wt','vulnerability.wt'),
                                atlas=NULL, .function=NULL, weighted=FALSE,
                                xfm.type=c('1/w', '-log(w)', '1-w'),
                                clust.method='louvain') {
@@ -217,12 +217,13 @@ graph_attr_perm_weighted <- function(g, densities, atlas,
   #Lpv.wt <- sapply(Lpv.wt, sapply, turn_NA)
   Lp.wt <- sapply(g1, sapply, function(x) mean(Lpv_wt_gen(x)[upper.tri(Lpv_wt_gen(x))], na.rm=T))
   diameter.wt <- sapply(g1, sapply, diameter)
+  vulnerability.wt <- sapply(g, sapply, function(x) max(vulnerability(x, use.parallel=TRUE, weighted=TRUE)))
   E.global.wt <- sapply(g1, sapply, function(x) mean(efficiency(x, 'nodal')))
   E.local.wt <- sapply(g1, sapply, function(x)
     mean(efficiency(x, type='local', use.parallel=TRUE, A=NULL)))
   
   list(mod.wt=mod.wt, strength=strength, Lp.wt=Lp.wt, diameter.wt=diameter.wt, E.global.wt=E.global.wt, 
-       E.local.wt=E.local.wt)
+       vnlnerability.wt=vnlnerability.wt, E.local.wt=E.local.wt)
 }
 
 graph_attr_perm_diffs <- function(densities, meas.list, auc) {
@@ -280,6 +281,7 @@ vertex_attr_perm <- function(measure, g, densities) {
 vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w', '-log(w)', '1-w')) {
   xfm.type <- match.arg(xfm.type)
   switch(measure,
+         vulnerability.wt=lapply(g, function(x) t(sapply(x, vulnerability, weights=TRUE))),
          strength=lapply(g, function(x) t(sapply(x, graph.strength))),
          knn.wt=lapply(g, function(x) t(sapply(x, function(y) graph.knn(y)$knn))),
          transitivity.wt=lapply(g, function(x) t(sapply(x, transitivity, type='weighted'))),
@@ -573,6 +575,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
                       asymm='Edge asymmetry',
                       btwn.cent='Betweenness centrality',
                       vulnerability='Vulnerability',
+                      vulnerability.wt='Weighted vulnerability',
                       degree='Degree',
                       E.nodal='Nodal efficiency',
                       ev.cent='Eigenvector centrality',
