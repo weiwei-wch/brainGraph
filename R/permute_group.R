@@ -217,7 +217,7 @@ graph_attr_perm_weighted <- function(g, densities, atlas,
   #Lpv.wt <- sapply(Lpv.wt, sapply, turn_NA)
   Lp.wt <- sapply(g1, sapply, function(x) mean(Lpv_wt_gen(x)[upper.tri(Lpv_wt_gen(x))], na.rm=T))
   diameter.wt <- sapply(g1, sapply, diameter)
-  vulnerability.wt <- sapply(g, sapply, function(x) max(vulnerability(x, use.parallel=TRUE, weighted=TRUE)))
+  vulnerability.wt <- sapply(g1, sapply, function(x) max(vulnerability(x, use.parallel=TRUE, weighted=TRUE)))
   E.global.wt <- sapply(g1, sapply, function(x) mean(efficiency(x, 'nodal')))
   E.local.wt <- sapply(g1, sapply, function(x)
     mean(efficiency(x, type='local', use.parallel=TRUE, A=NULL)))
@@ -281,7 +281,8 @@ vertex_attr_perm <- function(measure, g, densities) {
 vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w', '-log(w)', '1-w')) {
   xfm.type <- match.arg(xfm.type)
   switch(measure,
-         vulnerability.wt=lapply(g, function(x) t(sapply(x, vulnerability, weighted=TRUE))),
+         vulnerability.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
+         lapply(g1, function(x) t(sapply(x, vulnerability, weighted=TRUE)))},
          strength=lapply(g, function(x) t(sapply(x, graph.strength))),
          knn.wt=lapply(g, function(x) t(sapply(x, function(y) graph.knn(y)$knn))),
          transitivity.wt=lapply(g, function(x) t(sapply(x, transitivity, type='weighted'))),
