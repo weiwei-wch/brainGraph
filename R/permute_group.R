@@ -281,7 +281,7 @@ vertex_attr_perm <- function(measure, g, densities) {
 vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w', '-log(w)', '1-w')) {
   xfm.type <- match.arg(xfm.type)
   switch(measure,
-         vulnerability.wt=lapply(g, function(x) t(sapply(x, vulnerability, weights=TRUE))),
+         vulnerability.wt=lapply(g, function(x) t(sapply(x, vulnerability, weighted=TRUE))),
          strength=lapply(g, function(x) t(sapply(x, graph.strength))),
          knn.wt=lapply(g, function(x) t(sapply(x, function(y) graph.knn(y)$knn))),
          transitivity.wt=lapply(g, function(x) t(sapply(x, transitivity, type='weighted'))),
