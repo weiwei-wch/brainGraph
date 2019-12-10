@@ -257,13 +257,13 @@ graph_attr_perm_diffs <- function(densities, meas.list, auc) {
 
 permute_graph_foreach <- function(perms, densities, resids, groups, atlas, auc, mat.type) {
   i <- NULL
-  if (mat.type = 'abs') {
+  if (mat.type == 'abs') {
   res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
     g <- make_graphs_perm_abs(densities, resids, perms[i, ], groups)
     meas.list <- graph_attr_perm(g, densities, atlas)
     graph_attr_perm_diffs(densities, meas.list, auc)
     }
-  } else if (mat.type = 'positive') {
+  } else if (mat.type == 'positive') {
     res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
     g <- make_graphs_perm_positive(densities, resids, perms[i, ], groups)
     meas.list <- graph_attr_perm(g, densities, atlas)
@@ -275,14 +275,14 @@ permute_graph_foreach <- function(perms, densities, resids, groups, atlas, auc, 
 permute_graph_foreach_weighted <- function(perms, densities, resids, groups, atlas, auc, 
                                            xfm.type=c('1/w', '-log(w)', '1-w'), clust.method='louvain', mat.type) {
   i <- NULL
-  if (mat.type = 'abs') {
+  if (mat.type == 'abs') {
   xfm.type <- match.arg(xfm.type)
   res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
     g <- make_graphs_perm_weighted_abs(densities, resids, perms[i, ], groups)
     meas.list <- graph_attr_perm_weighted(g, densities, atlas, xfm.type)
     graph_attr_perm_diffs(densities, meas.list, auc)
     }
-  } else if (mat.type = 'positive') {
+  } else if (mat.type == 'positive') {
     xfm.type <- match.arg(xfm.type)
     res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
       g <- make_graphs_perm_weighted_positive(densities, resids, perms[i, ], groups)
@@ -333,13 +333,13 @@ vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w',
 
 permute_vertex_foreach <- function(perms, densities, resids, groups, measure, diffFun, mat.type) {
   i <- NULL
-  if (mat.type = 'abs') {
+  if (mat.type == 'abs') {
   res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
     g <- make_graphs_perm_abs(densities, resids, perms[i, ], groups)
     meas.list <- vertex_attr_perm(measure, g, densities)
     diffFun(densities, meas.list)
     }
-  } else if (mat.type = 'positive') {
+  } else if (mat.type == 'positive') {
     res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
       g <- make_graphs_perm_positive(densities, resids, perms[i, ], groups)
       meas.list <- vertex_attr_perm(measure, g, densities)
@@ -351,14 +351,14 @@ permute_vertex_foreach <- function(perms, densities, resids, groups, measure, di
 permute_vertex_foreach_weighted <- function(perms, densities, resids, groups, measure, 
                                             diffFun, xfm.type=c('1/w', '-log(w)', '1-w'), mat.type) {
   i <- NULL
-  if (mat.type = 'abs') {
+  if (mat.type == 'abs') {
   xfm.type <- match.arg(xfm.type)
   res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
     g <- make_graphs_perm_weighted_abs(densities, resids, perms[i, ], groups)
     meas.list <- vertex_attr_perm_weighted(measure, g, densities, xfm.type)
     diffFun(densities, meas.list)
     }
-  } else if (mat.type = 'positive') {
+  } else if (mat.type == 'positive') {
     xfm.type <- match.arg(xfm.type)
     res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
       g <- make_graphs_perm_weighted_positive(densities, resids, perms[i, ], groups)
@@ -371,12 +371,12 @@ permute_vertex_foreach_weighted <- function(perms, densities, resids, groups, me
 # Other-level
 permute_other_foreach <- function(perms, densities, resids, groups, mat.type, .function) {
   i <- NULL
-  if (mat.type = 'abs') {
+  if (mat.type == 'abs') {
   res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
     g <- make_graphs_perm_abs(densities, resids, perms[i, ], groups)
     .function(g, densities)
     }
-  } else if (mat.type = 'positive') {
+  } else if (mat.type == 'positive') {
     res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
       g <- make_graphs_perm_positive(densities, resids, perms[i, ], groups)
       .function(g, densities)
