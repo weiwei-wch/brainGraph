@@ -235,13 +235,12 @@ graph_attr_perm_weighted <- function(g, densities, atlas,
   #Lpv.wt <- sapply(Lpv.wt, sapply, turn_NA)
   Lp.wt <- sapply(g1, sapply, function(x) mean(Lpv_wt_gen(x)[upper.tri(Lpv_wt_gen(x))], na.rm=T))
   diameter.wt <- sapply(g1, sapply, diameter)
-  #vulnerability.wt <- sapply(g1, sapply, function(x) max(vulnerability(x, use.parallel=TRUE, weighted=TRUE)))
   E.global.wt <- sapply(g1, sapply, function(x) mean(efficiency(x, 'nodal')))
   E.local.wt <- sapply(g1, sapply, function(x)
     mean(efficiency(x, type='local', use.parallel=TRUE, A=NULL)))
   
   list(mod.wt=mod.wt, strength=strength, Lp.wt=Lp.wt, diameter.wt=diameter.wt, E.global.wt=E.global.wt, 
-       vnlnerability.wt=vnlnerability.wt, E.local.wt=E.local.wt)
+       E.local.wt=E.local.wt)
 }
 
 graph_attr_perm_diffs <- function(densities, meas.list, auc) {
@@ -316,8 +315,8 @@ vertex_attr_perm <- function(measure, g, densities) {
 vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w', '-log(w)', '1-w')) {
   xfm.type <- match.arg(xfm.type)
   switch(measure,
-#         vulnerability.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
-#         lapply(g1, function(x) t(sapply(x, vulnerability, weighted=TRUE)))},
+         vulnerability.wt={g1 <- lapply(g, lapply, function(x) xfm.weights(x, xfm.type))
+         lapply(g1, function(x) t(sapply(x, vulnerability, weighted=TRUE)))},
          strength=lapply(g, function(x) t(sapply(x, graph.strength))),
          knn.wt=lapply(g, function(x) t(sapply(x, function(y) graph.knn(y)$knn))),
          transitivity.wt=lapply(g, function(x) t(sapply(x, transitivity, type='weighted'))),
@@ -402,16 +401,26 @@ permute_other_foreach <- function(perms, densities, resids, groups, mat.type, .f
 
 summary.brainGraph_permute <- function(object, measure=NULL,
                                        alternative=c('two.sided', 'less', 'greater'),
-                                       alpha=0.05, p.sig=c('p', 'p.fdr'), accel=c('tail','numeric','NULL'),...) {
+                                       alpha=0.05, p.sig=c('p', 'p.fdr'), mat.type=c('abs','positive'), 
+                                       accel=c('tail','numeric','NULL'),...) {
   perm.diff <- p <- N <- p.fdr <- region <- obs.diff <- NULL
   
   permDT <- copy(object$DT)
+  if (mat.type == 'abs'){
   if (object$graphtype == 'weighted'){
-    g <- with(object, make_graphs_perm_weighted(densities, resids, 1:nrow(resids$resids.all),
+    g <- with(object, make_graphs_perm_weighted_abs(densities, resids, 1:nrow(resids$resids.all),
                                                 resids$resids.all[, as.numeric(Group)]))
   }else{
-    g <- with(object, make_graphs_perm(densities, resids, 1:nrow(resids$resids.all),
+    g <- with(object, make_graphs_perm_abs(densities, resids, 1:nrow(resids$resids.all),
                                        resids$resids.all[, as.numeric(Group)]))}
+  }else{
+    if (object$graphtype == 'weighted'){
+      g <- with(object, make_graphs_perm_weighted_positive(densities, resids, 1:nrow(resids$resids.all),
+                                                      resids$resids.all[, as.numeric(Group)]))
+    }else{
+      g <- with(object, make_graphs_perm_positive(densities, resids, 1:nrow(resids$resids.all),
+                                             resids$resids.all[, as.numeric(Group)]))}
+  }
   
   # OTHER
   #-------------------------------------
@@ -635,7 +644,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
                       asymm='Edge asymmetry',
                       btwn.cent='Betweenness centrality',
                       vulnerability='Vulnerability',
-#                      vulnerability.wt='Weighted vulnerability',
+                      vulnerability.wt='Weighted vulnerability',
                       degree='Degree',
                       E.nodal='Nodal efficiency',
                       ev.cent='Eigenvector centrality',
@@ -694,7 +703,8 @@ print.summary.brainGraph_permute <- function(x, ...) {
 
 plot.brainGraph_permute <- function(x, measure=NULL,
                                     alternative=c('two.sided', 'less', 'greater'),
-                                    alpha=0.05, p.sig=c('p', 'p.fdr'), ptitle=NULL, accel=c('tail','numeric','NULL'),...) {
+                                    alpha=0.05, p.sig=c('p', 'p.fdr'), ptitle=NULL, mat.type=c('abs','positive'), 
+                                    accel=c('tail','numeric','NULL'),...) {
   densities <- Group <- sig <- trend <- yloc <- obs <- mylty <- ci.low <- ci.high <-
     variable <- value <- reg.num <- region <- perm.diff <- obs.diff <- NULL
   p.sig <- match.arg(p.sig)
@@ -705,7 +715,8 @@ plot.brainGraph_permute <- function(x, measure=NULL,
     measure <- x$measure
   }
   accel <- match.arg(accel)
-  perm.sum <- summary(x, measure=measure, alternative=alternative, alpha=alpha, accel=accel)
+  mat.type <- match.arg(mat.type)
+  perm.sum <- summary(x, measure=measure, alternative=alternative, alpha=alpha, accel=accel, mat.type=mat.type)
   sum.dt <- perm.sum$DT.sum
   if (is.null(ptitle)) ptitle <- perm.sum$meas.full
   ylabel2 <- sprintf('Observed and permutation difference (%s - %s)', x$groups[1], x$groups[2])

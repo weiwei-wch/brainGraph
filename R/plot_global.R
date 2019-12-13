@@ -28,7 +28,7 @@
 
 plot_global <- function(tidy.dt, xvar=c('density', 'threshold'), vline=NULL,
                         level.names=NULL, exclude=NULL, perms=NULL,
-                        g=NULL, alt=NULL, accel=c('tail','numeric','NULL')) {
+                        g=NULL, alt=NULL, accel=c('tail','numeric','NULL'), mat.type=c('abs','positive')) {
   sig <- trend <- yloc <- value <- variable <- Group <- threshold <- NULL
 
   subDT <- copy(tidy.dt)
@@ -43,7 +43,8 @@ plot_global <- function(tidy.dt, xvar=c('density', 'threshold'), vline=NULL,
     if (is.null(alt)) alt <- rep('two.sided', length(vars))
     for (i in seq_along(vars)) {
       accel <- match.arg(accel)
-      dt <- plot(perms, measure=vars[i], alternative=alt[i], accel=accel)[[1]]$data[variable == 'obs.diff']
+      mat.type <- match.arg(mat.type)
+      dt <- plot(perms, measure=vars[i], alternative=alt[i], accel=accel, mat.type=mat.type)[[1]]$data[variable == 'obs.diff']
       subDT[variable == vars[i], sig := dt$sig]
       subDT[variable == vars[i], trend := dt$trend]
       subDT[variable == vars[i], yloc := dt$yloc]
