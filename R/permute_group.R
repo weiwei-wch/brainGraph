@@ -303,7 +303,7 @@ vertex_attr_perm <- function(measure, g, densities) {
          asymm=lapply(g, function(x) t(sapply(x, function(y) edge_asymmetry(y, 'vertex')$asymm))),
          dist=lapply(g, function(x) t(sapply(x, vertex_spatial_dist))),
          dist.strength=lapply(g, function(x) t(sapply(x, function(y) vertex_spatial_dist(y)*degree(y)))),
-         Lp=lapply(g, function(x) t(sapply(x, mean_distance))),
+         Lp=lapply(g, function(x) t(sapply(x, all_shortest_paths))),
          lev.cent=lapply(g, function(x) t(sapply(x, centr_lev))),
          k.core=lapply(g, function(x) t(sapply(x, coreness))),
          E.local=lapply(g, function(x) t(sapply(x, efficiency, type='local', weights=NA, use.parallel=TRUE, A=A))),
