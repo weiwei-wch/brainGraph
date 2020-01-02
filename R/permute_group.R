@@ -166,7 +166,7 @@ make_graphs_perm_abs <- function(densities, resids, inds, groups) {
 make_graphs_perm_positive <- function(densities, resids, inds, groups) {
   corrs <- lapply(unique(groups), function(x)
     corr.matrix(resids[which(groups[inds] == x)],
-                    densities=densities, rand=TRUE))
+                densities=densities, rand=TRUE))
   sapply(corrs, lapply, function(x)
     apply(x$r.thresh, 3, graph_from_adjacency_matrix, mode='undirected', diag=F))
 }
@@ -183,7 +183,7 @@ make_graphs_perm_weighted_abs <- function(densities, resids, inds, groups) {
 make_graphs_perm_weighted_positive <- function(densities, resids, inds, groups) {
   corrs <- lapply(unique(groups), function(x)
     corr.matrix(resids[which(groups[inds] == x)],
-                    densities=densities, rand=TRUE))
+                densities=densities, rand=TRUE))
   sapply(corrs, lapply, function(x)
     apply(x$r.thresh, 3, function(y)
       graph_from_adjacency_matrix(x$R*y, mode='undirected', diag=F, weighted=TRUE)))
@@ -257,16 +257,16 @@ graph_attr_perm_diffs <- function(densities, meas.list, auc) {
 permute_graph_foreach <- function(perms, densities, resids, groups, atlas, auc, mat.type) {
   i <- NULL
   if (mat.type == 'abs') {
-  res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
-    g <- make_graphs_perm_abs(densities, resids, perms[i, ], groups)
-    meas.list <- graph_attr_perm(g, densities, atlas)
-    graph_attr_perm_diffs(densities, meas.list, auc)
+    res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
+      g <- make_graphs_perm_abs(densities, resids, perms[i, ], groups)
+      meas.list <- graph_attr_perm(g, densities, atlas)
+      graph_attr_perm_diffs(densities, meas.list, auc)
     }
   } else if (mat.type == 'positive') {
     res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
-    g <- make_graphs_perm_positive(densities, resids, perms[i, ], groups)
-    meas.list <- graph_attr_perm(g, densities, atlas)
-    graph_attr_perm_diffs(densities, meas.list, auc)
+      g <- make_graphs_perm_positive(densities, resids, perms[i, ], groups)
+      meas.list <- graph_attr_perm(g, densities, atlas)
+      graph_attr_perm_diffs(densities, meas.list, auc)
     }
   }
 }
@@ -275,11 +275,11 @@ permute_graph_foreach_weighted <- function(perms, densities, resids, groups, atl
                                            xfm.type=c('1/w', '-log(w)', '1-w'), clust.method='louvain', mat.type) {
   i <- NULL
   if (mat.type == 'abs') {
-  xfm.type <- match.arg(xfm.type)
-  res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
-    g <- make_graphs_perm_weighted_abs(densities, resids, perms[i, ], groups)
-    meas.list <- graph_attr_perm_weighted(g, densities, atlas, xfm.type)
-    graph_attr_perm_diffs(densities, meas.list, auc)
+    xfm.type <- match.arg(xfm.type)
+    res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
+      g <- make_graphs_perm_weighted_abs(densities, resids, perms[i, ], groups)
+      meas.list <- graph_attr_perm_weighted(g, densities, atlas, xfm.type)
+      graph_attr_perm_diffs(densities, meas.list, auc)
     }
   } else if (mat.type == 'positive') {
     xfm.type <- match.arg(xfm.type)
@@ -333,10 +333,10 @@ vertex_attr_perm_weighted <- function(measure, g, densities, xfm.type = c('1/w',
 permute_vertex_foreach <- function(perms, densities, resids, groups, measure, diffFun, mat.type) {
   i <- NULL
   if (mat.type == 'abs') {
-  res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
-    g <- make_graphs_perm_abs(densities, resids, perms[i, ], groups)
-    meas.list <- vertex_attr_perm(measure, g, densities)
-    diffFun(densities, meas.list)
+    res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
+      g <- make_graphs_perm_abs(densities, resids, perms[i, ], groups)
+      meas.list <- vertex_attr_perm(measure, g, densities)
+      diffFun(densities, meas.list)
     }
   } else if (mat.type == 'positive') {
     res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
@@ -351,11 +351,11 @@ permute_vertex_foreach_weighted <- function(perms, densities, resids, groups, me
                                             diffFun, xfm.type=c('1/w', '-log(w)', '1-w'), mat.type) {
   i <- NULL
   if (mat.type == 'abs') {
-  xfm.type <- match.arg(xfm.type)
-  res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
-    g <- make_graphs_perm_weighted_abs(densities, resids, perms[i, ], groups)
-    meas.list <- vertex_attr_perm_weighted(measure, g, densities, xfm.type)
-    diffFun(densities, meas.list)
+    xfm.type <- match.arg(xfm.type)
+    res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
+      g <- make_graphs_perm_weighted_abs(densities, resids, perms[i, ], groups)
+      meas.list <- vertex_attr_perm_weighted(measure, g, densities, xfm.type)
+      diffFun(densities, meas.list)
     }
   } else if (mat.type == 'positive') {
     xfm.type <- match.arg(xfm.type)
@@ -363,24 +363,24 @@ permute_vertex_foreach_weighted <- function(perms, densities, resids, groups, me
       g <- make_graphs_perm_weighted_positive(densities, resids, perms[i, ], groups)
       meas.list <- vertex_attr_perm_weighted(measure, g, densities, xfm.type)
       diffFun(densities, meas.list)
+    }
   }
- }
 }
 
 # Other-level
 permute_other_foreach <- function(perms, densities, resids, groups, mat.type, .function) {
   i <- NULL
   if (mat.type == 'abs') {
-  res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
-    g <- make_graphs_perm_abs(densities, resids, perms[i, ], groups)
-    .function(g, densities)
+    res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
+      g <- make_graphs_perm_abs(densities, resids, perms[i, ], groups)
+      .function(g, densities)
     }
   } else if (mat.type == 'positive') {
     res.perm <- foreach(i=seq_len(nrow(perms)), .combine='rbind') %dopar% {
       g <- make_graphs_perm_positive(densities, resids, perms[i, ], groups)
       .function(g, densities)
+    }
   }
- }
 }
 
 #==============================================================================
@@ -407,19 +407,19 @@ summary.brainGraph_permute <- function(object, measure=NULL,
   
   permDT <- copy(object$DT)
   if (mat.type == 'abs'){
-  if (object$graphtype == 'weighted'){
-    g <- with(object, make_graphs_perm_weighted_abs(densities, resids, 1:nrow(resids$resids.all),
-                                                resids$resids.all[, as.numeric(Group)]))
-  }else{
-    g <- with(object, make_graphs_perm_abs(densities, resids, 1:nrow(resids$resids.all),
-                                       resids$resids.all[, as.numeric(Group)]))}
+    if (object$graphtype == 'weighted'){
+      g <- with(object, make_graphs_perm_weighted_abs(densities, resids, 1:nrow(resids$resids.all),
+                                                      resids$resids.all[, as.numeric(Group)]))
+    }else{
+      g <- with(object, make_graphs_perm_abs(densities, resids, 1:nrow(resids$resids.all),
+                                             resids$resids.all[, as.numeric(Group)]))}
   }else{
     if (object$graphtype == 'weighted'){
       g <- with(object, make_graphs_perm_weighted_positive(densities, resids, 1:nrow(resids$resids.all),
-                                                      resids$resids.all[, as.numeric(Group)]))
+                                                           resids$resids.all[, as.numeric(Group)]))
     }else{
       g <- with(object, make_graphs_perm_positive(densities, resids, 1:nrow(resids$resids.all),
-                                             resids$resids.all[, as.numeric(Group)]))}
+                                                  resids$resids.all[, as.numeric(Group)]))}
   }
   
   # OTHER
@@ -573,7 +573,7 @@ summary.brainGraph_permute <- function(object, measure=NULL,
     }
     result.dt[, c('ci.low', 'ci.high') := as.list(sort(get(measure))[ceiling(.N * CI)]), by=key(result.dt)]
     result.dt <- result.dt[, .SD[1], by=key(result.dt)]
-    pVal[['region']]<-result.dt[['region']]
+    pVal[['region']]<-meanPermDT[['region']]
     result.dt<-merge(result.dt, pVal, by=key(result.dt))    
     sum.dt <- merge(sum.dt, result.dt[, !c(measure, 'obs.diff'), with=F], by=key(result.dt))
   } else if (accel == 'tail') {
@@ -619,11 +619,11 @@ summary.brainGraph_permute <- function(object, measure=NULL,
       CI <- c(alpha, 1)}
     result.dt[, c('ci.low', 'ci.high') := as.list(sort(get(measure))[ceiling(.N * CI)]), by=key(result.dt)]
     result.dt <- result.dt[, .SD[1], by=key(result.dt)]
-    pVal[['region']]<-result.dt[['region']]
+    pVal[['region']]<-meanPermDT[['region']]
     result.dt<-merge(result.dt, pVal, by=key(result.dt))    
     sum.dt <- merge(sum.dt, result.dt[, !c(measure, 'obs.diff'), with=F], by=key(result.dt))
   }
-
+  
   setcolorder(sum.dt,
               c('densities', 'region', paste0(measure, '.', object$groups), 'obs.diff',
                 'ci.low', 'ci.high', 'perm.diff', 'p'))
